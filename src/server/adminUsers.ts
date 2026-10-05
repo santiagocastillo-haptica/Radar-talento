@@ -42,6 +42,16 @@ export async function verifyPassword(pw: string, stored: string): Promise<boolea
   return dk.length === expected.length && crypto.timingSafeEqual(dk, expected);
 }
 
+/**
+ * Verifica tolerando espacios o saltos de línea sobrantes en los extremos (típico al copiar una contraseña
+ * temporal desde una terminal). Primero se prueba tal cual.
+ */
+async function verifyLoose(pw: string, stored: string): Promise<boolean> {
+  if (await verifyPassword(pw, stored)) return true;
+  const trimmed = pw.trim();
+  return trimmed.length > 0 && trimmed !== pw ? verifyPassword(trimmed, stored) : false;
+}
+
 /** Mínimo razonable sin reglas absurdas: largo, no igual al correo, no repetitiva. */
 export function validatePassword(pw: string, email: string): string | null {
   if (typeof pw !== 'string' || pw.length < 12) return 'La contraseña debe tener al menos 12 caracteres.';
@@ -130,7 +140,7 @@ export async function resetPassword(store: Store, email: string, actor: string, 
 
 export async function changeOwnPassword(store: Store, email: string, current: string, next: string, now = new Date()): Promise<AdminUser> {
   const doc = await store.get(userPath(email));
-  if (!doc || !(await verifyPassword(current, doc.passwordHash))) throw new AppError('bad_credentials', 401, 'La contraseña actual no es correcta');
+  if (!doc || !(await verifyLoose(current, doc.passwordHash))) throw new AppError('bad_credentials', 401, 'La contraseña actual no es correcta');
   const problem = validatePassword(next, email);
   if (problem) throw new AppError('weak_password', 422, problem);
   if (await verifyPassword(next, doc.passwordHash)) throw new AppError('same_password', 422, 'La contraseña nueva debe ser distinta de la actual');
@@ -169,7 +179,7 @@ export async function authenticate(store: Store, email: string, password: string
   }
   const doc = EMAIL_RE.test(mail) ? await store.get(userPath(mail)) : null;
   dummyHash ??= hashPassword('contraseña-ficticia-para-igualar-tiempos');
-  const ok = await verifyPassword(String(password ?? ''), doc?.passwordHash ?? (await dummyHash));
+  const ok = await verifyLoose(String(password ?? ''), doc?.passwordHash ?? (await dummyHash));
   if (!doc || !doc.active || !ok) {
     await recordRateEvent(store, ipKey, now, LOGIN_WINDOW_S);
     await recordRateEvent(store, mailKey, now, LOGIN_WINDOW_S);

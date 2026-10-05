@@ -125,3 +125,14 @@ describe('usuarios y acceso', () => {
     expect((await authenticate(s, 'luis@haptica.co', temporaryPassword!, '4.4.4.4', T)).email).toBe('luis@haptica.co');
   });
 });
+
+describe('contraseña copiada con espacios', () => {
+  it('acepta espacios o saltos de línea sobrantes en los extremos al iniciar sesión', async () => {
+    const s = new MemoryStore();
+    const { temporaryPassword } = await createAdminUser(s, { email: 'ana@haptica.co', actor: 't' }, T);
+    for (const variant of [temporaryPassword + ' ', '  ' + temporaryPassword, temporaryPassword + '\r\n', temporaryPassword]) {
+      expect((await authenticate(s, 'ana@haptica.co', variant, '5.5.5.5', T)).email).toBe('ana@haptica.co');
+    }
+    expect(await code(authenticate(s, 'ana@haptica.co', temporaryPassword + 'x', '5.5.5.5', T))).toBe('bad_credentials');
+  });
+});
