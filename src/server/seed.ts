@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import type { Store } from './store';
-import type { VariantDoc, VariantKeysDoc, VariantQuestion } from './model';
+import { encodeBlocks, type VariantKeysDoc, type VariantQuestion } from './model';
 import { VARIANTS } from '@/content/variants';
 
 const optionId = (slug: string, qid: string, index: number) =>
@@ -39,24 +39,24 @@ export async function seedContent(store: Store): Promise<{ variants: number; que
         questions.push(vq);
       }
     }
-    const doc: VariantDoc = {
+    const doc = {
       slug: v.slug,
       role: v.role,
       name: v.name,
       active: true,
       caseTitle: v.caseTitle,
-      caseContext: v.caseContext,
-      twist: v.twist,
+      caseContext: encodeBlocks(v.caseContext),
+      twist: encodeBlocks(v.twist),
       parts: v.parts.map((p) => ({
         part: p.part,
         title: p.title,
-        intro: p.intro ?? [],
+        intro: encodeBlocks(p.intro ?? []),
         outro: p.outro ?? null,
         suggestedMinutes: p.suggestedMinutes,
         groupWordLimit: p.groupWordLimit ?? null,
       })),
       questions,
-    };
+    } satisfies Record<string, unknown>;
     await store.set(`variants/${v.slug}`, doc);
     await store.set(`variantKeys/${v.slug}`, { keys });
   }

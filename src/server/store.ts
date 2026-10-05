@@ -61,6 +61,18 @@ function deepMerge(target: Data, patch: Data): Data {
 
 const clone = <T>(v: T): T => structuredClone(v);
 
+/** Imita una restricción de Firestore: un arreglo no puede contener directamente otro arreglo. */
+function assertFirestoreSafe(value: unknown, where = 'doc'): void {
+  if (Array.isArray(value)) {
+    value.forEach((v, i) => {
+      if (Array.isArray(v)) throw new Error(`Firestore no admite arreglos anidados (en ${where}[${i}])`);
+      assertFirestoreSafe(v, `${where}[${i}]`);
+    });
+  } else if (value && typeof value === 'object') {
+    for (const [k, v] of Object.entries(value)) assertFirestoreSafe(v, `${where}.${k}`);
+  }
+}
+
 function matches(data: Data, q: Query | undefined): boolean {
   for (const [f, op, val] of q?.where ?? []) {
     const x = data[f] === undefined ? null : data[f];
@@ -120,16 +132,19 @@ export class MemoryStore implements Store {
 
   async set(p: string, data: Data) {
     assertMutable(p, 'set');
+    assertFirestoreSafe(data);
     this.docs.set(p, clone(data));
     this.persist();
   }
   async create(p: string, data: Data) {
+    assertFirestoreSafe(data);
     if (this.docs.has(p)) throw new Error(`El documento ${p} ya existe`);
     this.docs.set(p, clone(data));
     this.persist();
   }
   async merge(p: string, data: Data) {
     assertMutable(p, 'merge');
+    assertFirestoreSafe(data);
     this.docs.set(p, deepMerge(this.docs.get(p) ?? {}, clone(data)));
     this.persist();
   }
@@ -156,10 +171,12 @@ export class MemoryStore implements Store {
         query: async (c, q) => (guard(), this.query(c, q)),
         set: async (p, d) => {
           assertMutable(p, 'set');
+          assertFirestoreSafe(d);
           wrote = true;
           writes.push(() => this.docs.set(p, clone(d)));
         },
         create: async (p, d) => {
+          assertFirestoreSafe(d);
           wrote = true;
           writes.push(() => {
             if (this.docs.has(p)) throw new Error(`El documento ${p} ya existe`);
@@ -168,6 +185,7 @@ export class MemoryStore implements Store {
         },
         merge: async (p, d) => {
           assertMutable(p, 'merge');
+          assertFirestoreSafe(d);
           wrote = true;
           writes.push(() => this.docs.set(p, deepMerge(this.docs.get(p) ?? {}, clone(d))));
         },

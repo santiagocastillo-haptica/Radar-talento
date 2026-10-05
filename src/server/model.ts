@@ -97,8 +97,25 @@ export function toInv(id: string, x: Data): InvRow {
 
 export const invPath = (id: string) => `invitations/${id}`;
 
+/**
+ * Firestore no admite arreglos dentro de arreglos: las filas de una tabla (string[][]) se guardan como
+ * [{ cells: string[] }] y se restauran al leer. Todo el resto del código trabaja con `Block` normal.
+ */
+export function encodeBlocks(blocks: Block[]): unknown[] {
+  return blocks.map((b) => (b.type === 'table' ? { ...b, rows: b.rows.map((cells) => ({ cells })) } : b));
+}
+
+export function decodeBlocks(stored: unknown[]): Block[] {
+  return (stored ?? []).map((b: any) => (b?.type === 'table' ? { ...b, rows: b.rows.map((r: { cells: string[] }) => r.cells) } : b));
+}
+
 export async function loadVariant(r: Reader, slug: string): Promise<VariantDoc> {
   const v = (await r.get(`variants/${slug}`)) as VariantDoc | null;
   if (!v) throw new Error(`Variante "${slug}" no encontrada (¿se ejecutó el seed?)`);
-  return v;
+  return {
+    ...v,
+    caseContext: decodeBlocks(v.caseContext),
+    twist: decodeBlocks(v.twist),
+    parts: v.parts.map((p) => ({ ...p, intro: decodeBlocks(p.intro) })),
+  };
 }

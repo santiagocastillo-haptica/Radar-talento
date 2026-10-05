@@ -84,3 +84,25 @@ describe('parseServiceAccount', () => {
     }
   });
 });
+
+import { freshDb, startedAttempt, viewPart, T0, at, min } from './helpers';
+
+describe('compatibilidad con Firestore', () => {
+  it('el almacén rechaza arreglos anidados, como Firestore', async () => {
+    const s = new MemoryStore();
+    await expect(s.set('d/1', { rows: [['a', 'b']] })).rejects.toThrow(/arreglos anidados/);
+    await expect(s.merge('d/1', { x: { rows: [[1]] } })).rejects.toThrow(/arreglos anidados/);
+    await s.set('d/2', { rows: [{ cells: ['a', 'b'] }] }); // forma válida
+  });
+
+  it('el contenido sembrado es válido para Firestore y la tabla del caso llega intacta al candidato', async () => {
+    const db = await freshDb(); // el seed ya pasó por la validación de arreglos anidados
+    const { token } = await startedAttempt(db);
+    const p = await viewPart(db, token, at(T0, min(1)));
+    const table = p.caseContext!.find((b) => b.type === 'table');
+    expect(table && table.type === 'table' && table.rows[0]).toEqual(['Recibieron el recordatorio', '40.000', '100%', '100%']);
+    const stored = (await db.get('variants/sd-renovacion-polizas'))!;
+    const raw = (stored.caseContext as { type: string; rows?: unknown[] }[]).find((b) => b.type === 'table')!;
+    expect(raw.rows![0]).toHaveProperty('cells');
+  });
+});
