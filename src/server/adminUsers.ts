@@ -165,8 +165,14 @@ export async function setActive(store: Store, email: string, active: boolean, ac
 // ───────────────────────── Inicio de sesión ─────────────────────────
 
 const LOGIN_WINDOW_S = 900; // 15 min
-const MAX_FAILS_PER_IP = 10;
-const MAX_FAILS_PER_EMAIL = 5;
+/**
+ * Bloqueo temporal tras intentos fallidos. APAGADO por defecto (0). Para activarlo, define en el entorno
+ * LOGIN_MAX_FAILS_PER_EMAIL (p. ej. 5) y/o LOGIN_MAX_FAILS_PER_IP (p. ej. 10): bloquea 15 min.
+ */
+const limit = (name: string) => {
+  const n = Number(process.env[name]);
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+};
 let dummyHash: Promise<string> | null = null;
 
 /** Valida correo + contraseña. Mismo tiempo de respuesta exista o no el usuario; bloqueo temporal tras fallos. */
@@ -174,7 +180,9 @@ export async function authenticate(store: Store, email: string, password: string
   const mail = normalizeEmail(email ?? '');
   const ipKey = `login:ip:${ip}`;
   const mailKey = `login:email:${mail}`;
-  if ((await isRateLimited(store, ipKey, MAX_FAILS_PER_IP, LOGIN_WINDOW_S, now)) || (await isRateLimited(store, mailKey, MAX_FAILS_PER_EMAIL, LOGIN_WINDOW_S, now))) {
+  const maxIp = limit('LOGIN_MAX_FAILS_PER_IP');
+  const maxMail = limit('LOGIN_MAX_FAILS_PER_EMAIL');
+  if ((maxIp && (await isRateLimited(store, ipKey, maxIp, LOGIN_WINDOW_S, now))) || (maxMail && (await isRateLimited(store, mailKey, maxMail, LOGIN_WINDOW_S, now)))) {
     throw new AppError('rate_limited', 429, 'Demasiados intentos. Espera unos minutos e inténtalo de nuevo.');
   }
   const doc = EMAIL_RE.test(mail) ? await store.get(userPath(mail)) : null;
@@ -184,8 +192,8 @@ export async function authenticate(store: Store, email: string, password: string
     // Solo para los registros del servidor (el usuario ve siempre el mismo mensaje): sin contraseña ni correo en claro.
     const who = crypto.createHash('sha256').update(mail).digest('hex').slice(0, 8);
     console.warn(`[auth] login fallido motivo=${!doc ? 'usuario_inexistente' : !doc.active ? 'cuenta_desactivada' : 'contrasena_distinta'} usuario=${who}`);
-    await recordRateEvent(store, ipKey, now, LOGIN_WINDOW_S);
-    await recordRateEvent(store, mailKey, now, LOGIN_WINDOW_S);
+    if (maxIp) await recordRateEvent(store, ipKey, now, LOGIN_WINDOW_S);
+    if (maxMail) await recordRateEvent(store, mailKey, now, LOGIN_WINDOW_S);
     throw new AppError('bad_credentials', 401, 'Correo o contraseña incorrectos');
   }
   await store.merge(userPath(mail), { lastLoginAt: now.toISOString() });

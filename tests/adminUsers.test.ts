@@ -81,12 +81,23 @@ describe('usuarios y acceso', () => {
     expect(await code(authenticate(s, 'nadie@haptica.co', temp, '1.1.1.1', T))).toBe('bad_credentials'); // mismo error si no existe
   });
 
-  it('bloquea temporalmente tras 5 fallos por correo (aunque cambie la IP) y se libera con el tiempo', async () => {
+  it('por defecto NO bloquea por intentos fallidos', async () => {
+    const { s, temp } = await store();
+    for (let i = 0; i < 20; i++) expect(await code(authenticate(s, 'ana@haptica.co', 'mal-' + i, '7.7.7.7', T))).toBe('bad_credentials');
+    expect((await authenticate(s, 'ana@haptica.co', temp, '7.7.7.7', T)).email).toBe('ana@haptica.co');
+  });
+
+  it('con LOGIN_MAX_FAILS_PER_EMAIL=5 bloquea (aunque cambie la IP) y se libera con el tiempo', async () => {
+    process.env.LOGIN_MAX_FAILS_PER_EMAIL = '5';
+    try {
     const { s, temp } = await store();
     for (let i = 0; i < 5; i++) expect(await code(authenticate(s, 'ana@haptica.co', 'mal-' + i, `9.9.9.${i}`, T))).toBe('bad_credentials');
     expect(await code(authenticate(s, 'ana@haptica.co', temp, '8.8.8.8', T))).toBe('rate_limited'); // ni la correcta pasa
     const later = new Date(T.getTime() + 16 * 60_000);
     expect((await authenticate(s, 'ana@haptica.co', temp, '8.8.8.8', later)).email).toBe('ana@haptica.co');
+    } finally {
+      delete process.env.LOGIN_MAX_FAILS_PER_EMAIL;
+    }
   });
 
   it('cambiar la contraseña quita la marca temporal e invalida sesiones anteriores', async () => {
