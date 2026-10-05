@@ -14,7 +14,8 @@ export default async function UsersPage() {
       <AdminNav email={me} />
       <main className="wrap wide">
         <p className="eyebrow">Panel del equipo</p>
-        <h1>Usuarios</h1>
+        <h1>Equipo del panel</h1>
+        <p className="muted">Las personas de Háptica que pueden entrar a este panel. Los candidatos y sus invitaciones están en la pestaña “Invitaciones y candidatos”.</p>
         <span className="rail" aria-hidden="true" />
         <UsersPanel users={users} me={me} />
       </main>

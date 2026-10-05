@@ -51,6 +51,8 @@ export interface InvRow {
   createdBy: string;
   createdAt: Date;
   expiresAt: Date;
+  /** Primera vez que el candidato abrió el enlace (la página llamó a la API). */
+  openedAt: Date | null;
   termsAcceptedAt: Date | null;
   startedAt: Date | null;
   deadlineAt: Date | null;
@@ -80,6 +82,7 @@ export function toInv(id: string, x: Data): InvRow {
     createdBy: x.createdBy,
     createdAt: new Date(x.createdAt),
     expiresAt: new Date(x.expiresAt),
+    openedAt: d(x.openedAt),
     termsAcceptedAt: d(x.termsAcceptedAt),
     startedAt: d(x.startedAt),
     deadlineAt: d(x.deadlineAt),

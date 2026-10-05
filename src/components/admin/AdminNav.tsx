@@ -7,8 +7,8 @@ export function AdminNav({ email, locked = false }: { email: string; locked?: bo
         <span className="logo">Háptica</span>
         {locked ? null : (
           <>
-            <Link href="/admin">Invitaciones</Link>
-            <Link href="/admin/usuarios">Usuarios</Link>
+            <Link href="/admin">Invitaciones y candidatos</Link>
+            <Link href="/admin/usuarios">Equipo del panel</Link>
             <a href="/api/admin/export?format=xlsx">Exportar Excel</a>
             <a href="/api/admin/export?format=csv">Exportar CSV</a>
             <a href="/api/admin/export?format=csv&hoja=respuestas">CSV de respuestas</a>

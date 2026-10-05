@@ -70,7 +70,12 @@ const currentPartOf = (inv: InvRow): PartId | null => PART_ORDER.find((p) => !in
 // ───────────────────────── Lectura ─────────────────────────
 
 export async function getAttemptView(store: Store, token: string, now = new Date()): Promise<AttemptView> {
-  const inv = await loadInvitation(store, token, now);
+  let inv = await loadInvitation(store, token, now);
+  if (!inv.openedAt) {
+    // Primera apertura del enlace: el equipo ve que la persona ya accedió (aunque aún no empiece la prueba).
+    await store.merge(invPath(inv.id), { openedAt: now.toISOString() });
+    inv = { ...inv, openedAt: now };
+  }
   return buildView(store, inv, now);
 }
 

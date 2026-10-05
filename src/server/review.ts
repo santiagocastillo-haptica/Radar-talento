@@ -22,6 +22,7 @@ export interface ListRow {
   status: Status;
   createdAt: string;
   expiresAt: string;
+  openedAt: string | null;
   startedAt: string | null;
   deadlineAt: string | null;
   remainingMs: number | null;
@@ -46,6 +47,7 @@ export async function listInvitations(store: Store, now = new Date()): Promise<L
       status,
       createdAt: r.createdAt.toISOString(),
       expiresAt: r.expiresAt.toISOString(),
+      openedAt: r.openedAt?.toISOString() ?? null,
       startedAt: r.startedAt?.toISOString() ?? null,
       deadlineAt: r.deadlineAt?.toISOString() ?? null,
       remainingMs: status === 'en_curso' ? remainingMs(r, now) : null,
@@ -101,6 +103,7 @@ export interface CandidateDetail {
     status: Status;
     createdAt: string;
     expiresAt: string;
+    openedAt: string | null;
     startedAt: string | null;
     deadlineAt: string | null;
     finishedAt: string | null;
@@ -218,6 +221,7 @@ export async function getCandidateDetail(store: Store, id: string, now = new Dat
       status,
       createdAt: inv.createdAt.toISOString(),
       expiresAt: inv.expiresAt.toISOString(),
+      openedAt: inv.openedAt?.toISOString() ?? null,
       startedAt: inv.startedAt?.toISOString() ?? null,
       deadlineAt: inv.deadlineAt?.toISOString() ?? null,
       finishedAt: inv.finishedAt?.toISOString() ?? null,

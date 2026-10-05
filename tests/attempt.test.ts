@@ -280,3 +280,23 @@ describe('selección múltiple', () => {
     expect(code2).toBe('bad_answer');
   });
 });
+
+describe('registro de apertura del enlace', () => {
+  it('guarda la primera apertura una sola vez, antes de que inicie la prueba', async () => {
+    const inv = await invite(db);
+    expect((await db.get(`invitations/${inv.id}`))!.openedAt).toBeNull();
+    await getAttemptView(db, inv.token, at(T0, min(5)));
+    await getAttemptView(db, inv.token, at(T0, min(9)));
+    const doc = (await db.get(`invitations/${inv.id}`))!;
+    expect(doc.openedAt).toBe(at(T0, min(5)).toISOString()); // la primera, no la última
+    expect(doc.startedAt).toBeNull(); // abrir no inicia el reloj
+  });
+
+  it('un enlace regenerado vuelve a contar como "sin abrir"', async () => {
+    const { regenerateLink } = await import('@/server/invitations');
+    const inv = await invite(db);
+    await getAttemptView(db, inv.token, at(T0, min(5)));
+    await regenerateLink(db, inv.id, 'admin@haptica.co', at(T0, min(6)));
+    expect((await db.get(`invitations/${inv.id}`))!.openedAt).toBeNull();
+  });
+});

@@ -39,6 +39,7 @@ export async function createInvitation(
     createdBy: input.actor,
     createdAt: now.toISOString(),
     expiresAt: expires.toISOString(),
+    openedAt: null,
     termsAcceptedAt: null,
     startedAt: null,
     deadlineAt: null,
@@ -65,7 +66,7 @@ export async function regenerateLink(store: Store, invitationId: string, actor: 
     if (!doc) throw new AppError('not_found', 404, 'Invitación no encontrada');
     const inv = toInv(invitationId, doc);
     if (inv.startedAt) throw new AppError('already_started', 409, 'La prueba ya inició: el enlace no se puede regenerar');
-    await t.merge(invPath(invitationId), { tokenHash: hashToken(token), expiresAt: expires.toISOString() });
+    await t.merge(invPath(invitationId), { tokenHash: hashToken(token), expiresAt: expires.toISOString(), openedAt: null });
     await audit(
       t,
       { actor, action: 'link_regenerated', invitationId, details: { previousExpiresAt: inv.expiresAt.toISOString(), newExpiresAt: expires.toISOString() } },

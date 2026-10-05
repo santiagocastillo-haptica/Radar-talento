@@ -69,7 +69,8 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
               <tbody>
                 <tr><th scope="row">Invitación creada</th><td>{fmt(inv.createdAt)}</td></tr>
                 <tr><th scope="row">Enlace vence (si no inicia)</th><td>{fmt(inv.expiresAt)}</td></tr>
-                <tr><th scope="row">Inició</th><td>{fmt(inv.startedAt)}</td></tr>
+                <tr><th scope="row">Abrió el enlace por primera vez</th><td>{fmt(inv.openedAt)}</td></tr>
+                <tr><th scope="row">Inició la prueba</th><td>{fmt(inv.startedAt)}</td></tr>
                 <tr><th scope="row">Límite (90 min)</th><td>{fmt(inv.deadlineAt)}</td></tr>
                 <tr><th scope="row">Terminó</th><td>{inv.finishedAt ? `${fmt(inv.finishedAt)} (envió todo)` : inv.status === 'expirada' ? 'Se cerró por tiempo con lo guardado' : '—'}</td></tr>
                 {inv.remainingMs !== null && inv.deadlineAt ? (
