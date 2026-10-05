@@ -37,9 +37,7 @@ async function main() {
   }
   const store = await getStore();
   if (check) {
-    console.log('
-' + (await diagnoseLogin(store, email, process.env.CHECK_PASSWORD ?? '')) + '
-');
+    console.log(`\n${await diagnoseLogin(store, email, process.env.CHECK_PASSWORD ?? '')}\n`);
     process.exit(0);
   }
   const actor = 'script:create-admin';
