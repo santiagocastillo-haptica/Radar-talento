@@ -181,10 +181,22 @@ export async function authenticate(store: Store, email: string, password: string
   dummyHash ??= hashPassword('contraseña-ficticia-para-igualar-tiempos');
   const ok = await verifyLoose(String(password ?? ''), doc?.passwordHash ?? (await dummyHash));
   if (!doc || !doc.active || !ok) {
+    // Solo para los registros del servidor (el usuario ve siempre el mismo mensaje): sin contraseña ni correo en claro.
+    const who = crypto.createHash('sha256').update(mail).digest('hex').slice(0, 8);
+    console.warn(`[auth] login fallido motivo=${!doc ? 'usuario_inexistente' : !doc.active ? 'cuenta_desactivada' : 'contrasena_distinta'} usuario=${who}`);
     await recordRateEvent(store, ipKey, now, LOGIN_WINDOW_S);
     await recordRateEvent(store, mailKey, now, LOGIN_WINDOW_S);
     throw new AppError('bad_credentials', 401, 'Correo o contraseña incorrectos');
   }
   await store.merge(userPath(mail), { lastLoginAt: now.toISOString() });
   return toUser({ ...doc, lastLoginAt: now.toISOString() });
+}
+
+/** Diagnóstico para el script local: dice en qué paso falla un inicio de sesión. Nunca se expone por HTTP. */
+export async function diagnoseLogin(store: Store, email: string, password: string): Promise<string> {
+  const doc = await store.get(userPath(email));
+  if (!doc) return `NO EXISTE un usuario con el correo "${normalizeEmail(email)}" en esta base de datos.`;
+  if (!doc.active) return 'El usuario existe pero está DESACTIVADO.';
+  if (!(await verifyLoose(password, doc.passwordHash))) return 'El usuario existe y está activo, pero la CONTRASEÑA NO COINCIDE con la guardada.';
+  return 'OK: correo y contraseña coinciden. Si el sitio los rechaza, el problema está en el despliegue (otra base de datos o versión).';
 }

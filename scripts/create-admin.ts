@@ -1,10 +1,11 @@
 import { firestoreConfigured, getStore } from '../src/server/store';
-import { createAdminUser, getAdminUser, listAdminUsers, resetPassword } from '../src/server/adminUsers';
+import { createAdminUser, diagnoseLogin, getAdminUser, listAdminUsers, resetPassword } from '../src/server/adminUsers';
 
 /**
  * Crea (o restablece) una persona administradora del panel contra Firestore.
  *   npm run admin:create -- correo@ejemplo.com "Nombre Apellido"
  *   npm run admin:create -- correo@ejemplo.com --reset
+ *   npm run admin:create -- correo@ejemplo.com --check   (lee la contraseña de la variable CHECK_PASSWORD)
  *   npm run admin:create -- --list        (muestra correos y estado; nunca contraseñas)
  * Genera una contraseña temporal aleatoria y la muestra UNA vez; la persona debe cambiarla al entrar.
  * (No se acepta la contraseña por argumento para que no quede en el historial de la terminal.)
@@ -14,6 +15,7 @@ async function main() {
   const list = args.includes('--list');
   const email = args.find((a) => a.includes('@'));
   const reset = args.includes('--reset');
+  const check = args.includes('--check');
   const name = args.find((a) => !a.includes('@') && !a.startsWith('--')) ?? '';
   if (list) {
     if (!firestoreConfigured()) {
@@ -34,6 +36,12 @@ async function main() {
     process.exit(1);
   }
   const store = await getStore();
+  if (check) {
+    console.log('
+' + (await diagnoseLogin(store, email, process.env.CHECK_PASSWORD ?? '')) + '
+');
+    process.exit(0);
+  }
   const actor = 'script:create-admin';
   const existing = await getAdminUser(store, email);
   let password: string;
