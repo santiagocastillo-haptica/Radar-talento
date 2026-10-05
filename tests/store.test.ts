@@ -58,3 +58,29 @@ describe('MemoryStore (misma semántica que Firestore)', () => {
     expect((await s.get('c/1'))!.n).toBe(20);
   });
 });
+
+import { parseServiceAccount } from '@/server/store';
+
+describe('parseServiceAccount', () => {
+  const sa = { type: 'service_account', project_id: 'p', private_key: '-----BEGIN PRIVATE KEY-----\nabc\n-----END PRIVATE KEY-----\n', client_email: 'x@p.iam.gserviceaccount.com' };
+  const json = JSON.stringify(sa, null, 2);
+
+  it('acepta JSON, base64, y variantes de pegado (BOM, comillas, UTF-16)', () => {
+    expect(parseServiceAccount(json).client_email).toBe(sa.client_email);
+    expect(parseServiceAccount('﻿' + json).client_email).toBe(sa.client_email);
+    expect(parseServiceAccount(`"${JSON.stringify(sa)}"`).client_email).toBe(sa.client_email);
+    expect(parseServiceAccount(Buffer.from(json).toString('base64')).client_email).toBe(sa.client_email);
+    expect(parseServiceAccount(Buffer.from(json, 'utf16le').toString('base64')).client_email).toBe(sa.client_email);
+    const wrapped = Buffer.from(json).toString('base64').replace(/(.{60})/g, '$1\n');
+    expect(parseServiceAccount(wrapped).client_email).toBe(sa.client_email);
+  });
+
+  it('rechaza basura sin filtrar el contenido en el mensaje', () => {
+    expect(() => parseServiceAccount('SECRETO-que-no-es-json')).toThrow(/no es el JSON de una cuenta de servicio/);
+    try {
+      parseServiceAccount('SECRETO-que-no-es-json');
+    } catch (e) {
+      expect((e as Error).message).not.toContain('SECRETO');
+    }
+  });
+});

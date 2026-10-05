@@ -190,9 +190,28 @@ export class MemoryStore implements Store {
 
 // ───────────────────────── Firestore ─────────────────────────
 
-function parseServiceAccount(raw: string): Record<string, unknown> {
-  const text = raw.trim().startsWith('{') ? raw : Buffer.from(raw, 'base64').toString('utf8');
-  return JSON.parse(text);
+/**
+ * Acepta el JSON de la cuenta de servicio tal cual o en base64, y tolera lo que suele pasar al pegarlo:
+ * BOM, comillas envolventes, saltos de línea o archivos guardados en UTF-16.
+ * Nunca incluye el contenido del valor en el mensaje de error.
+ */
+export function parseServiceAccount(raw: string): Record<string, unknown> {
+  let text = raw.replace(/^﻿/, '').trim();
+  if ((text.startsWith('"') && text.endsWith('"')) || (text.startsWith("'") && text.endsWith("'"))) text = text.slice(1, -1).trim();
+  const compact = text.replace(/\s+/g, '');
+  const candidates = [text, Buffer.from(compact, 'base64').toString('utf8'), Buffer.from(compact, 'base64').toString('utf16le')];
+  for (const c of candidates) {
+    const s = c.replace(/^﻿/, '').trim();
+    try {
+      const obj = JSON.parse(s);
+      if (obj && typeof obj === 'object' && typeof obj.private_key === 'string' && obj.client_email) return obj;
+    } catch {
+      /* probar la siguiente forma */
+    }
+  }
+  throw new Error(
+    'FIREBASE_SERVICE_ACCOUNT no es el JSON de una cuenta de servicio (ni su versión en base64). Vuelve a descargar la clave y pégala completa, de "{" a "}".',
+  );
 }
 
 export function firestoreConfigured(): boolean {
