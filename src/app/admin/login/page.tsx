@@ -10,9 +10,18 @@ const ERRORS: Record<string, string> = {
   server: 'Ocurrió un error inesperado. Inténtalo de nuevo.',
 };
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+const HINTS: Record<string, string> = {
+  env_var_missing: 'Falta una variable de entorno en el servidor: revisa SESSION_SECRET, TOKEN_HASH_SECRET y CRON_SECRET en Vercel y vuelve a desplegar.',
+  service_account_missing: 'Falta la clave de Firebase en el servidor (FIREBASE_SERVICE_ACCOUNT).',
+  service_account_invalid: 'La clave de Firebase del servidor no es válida.',
+  firestore_database_not_found: 'No se encontró la base de datos Firestore del proyecto.',
+  firestore_permission_denied: 'La cuenta de servicio no tiene permisos sobre Firestore.',
+  firestore_bad_credentials: 'Las credenciales de Firebase del servidor no son válidas.',
+};
+
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; hint?: string }> }) {
   if (await currentAdminSession()) redirect('/admin');
-  const { error } = await searchParams;
+  const { error, hint } = await searchParams;
   return (
     <main className="wrap" style={{ maxWidth: 480 }}>
       <p className="eyebrow">Háptica · Panel del equipo</p>
@@ -21,6 +30,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       {error ? (
         <div className="card warn" role="alert">
           <p>{ERRORS[error] ?? 'No se pudo entrar.'}</p>
+          {error === 'server' && hint && HINTS[hint] ? <p className="small">{HINTS[hint]}</p> : null}
         </div>
       ) : null}
       <form action="/api/auth/login" method="post">
