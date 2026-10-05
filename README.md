@@ -78,7 +78,7 @@ No se necesitan índices compuestos (`firestore.indexes.json` está vacío).
 1. **Retención de datos:** `DATA_RETENTION_DAYS` está vacío a propósito. Definirlo con **Jurídico** (y, si se decide borrar, implementar el job de borrado; hoy no hay borrado automático).
 2. **URL de la política de tratamiento de datos** (`PRIVACY_POLICY_URL`): hoy el aviso de datos de la pantalla de inicio es un texto mínimo y no enlaza a ninguna política hasta que se configure. Jurídico debe revisar ese texto.
 3. **Crear la primera cuenta del panel** (paso 5 del despliegue) y compartir las contraseñas temporales solo por un canal seguro.
-4. Revisar con Jurídico el aviso de señales y el texto de reglas (el texto de reglas es literal del brief).
+4. Revisar con Jurídico el aviso de señales y el texto de reglas (el texto de reglas, ajustado por Háptica para permitir el uso de IA, está en `RULES_TEXT` de `src/content/variants.ts`).
 
 ## Riesgos conocidos
 
