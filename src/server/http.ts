@@ -10,6 +10,20 @@ export function clientIp(req: Request): string {
   return (xf ? xf.split(',')[0].trim() : req.headers.get('x-real-ip')) || 'unknown';
 }
 
+/** Categoría de un error de infraestructura, sin ningún dato sensible: ayuda a diagnosticar sin abrir los logs. */
+export function safeHint(e: unknown): string {
+  const msg = String((e as Error)?.message ?? '');
+  const code = (e as { code?: unknown })?.code;
+  if (msg.startsWith('Falta FIREBASE_SERVICE_ACCOUNT')) return 'service_account_missing';
+  if (msg.startsWith('FIREBASE_SERVICE_ACCOUNT no es')) return 'service_account_invalid';
+  if (/Falta la variable de entorno/.test(msg)) return 'env_var_missing';
+  if (code === 5 || /NOT_FOUND/.test(msg)) return 'firestore_database_not_found';
+  if (code === 7 || /PERMISSION_DENIED/.test(msg)) return 'firestore_permission_denied';
+  if (code === 16 || /UNAUTHENTICATED|invalid_grant|private key/i.test(msg)) return 'firestore_bad_credentials';
+  if (code === 9 || /FAILED_PRECONDITION|requires an index/i.test(msg)) return 'firestore_needs_index';
+  return 'unknown';
+}
+
 function errorResponse(e: unknown): NextResponse {
   if (e instanceof AppError) {
     return NextResponse.json({ error: { code: e.code, message: e.message, ...e.extra } }, { status: e.status });
@@ -19,7 +33,10 @@ function errorResponse(e: unknown): NextResponse {
   }
   // Nunca se registra el token ni el cuerpo de la petición.
   console.error('[api] error inesperado:', (e as Error)?.message);
-  return NextResponse.json({ error: { code: 'server_error', message: 'Error interno' } }, { status: 500 });
+  return NextResponse.json(
+    { error: { code: 'server_error', message: 'Error interno', hint: safeHint(e), build: (process.env.VERCEL_GIT_COMMIT_SHA ?? 'local').slice(0, 7) } },
+    { status: 500 },
+  );
 }
 
 /** Rutas del candidato: el token viaja en el encabezado X-Attempt-Token (no en la URL, para que no quede en logs). */
