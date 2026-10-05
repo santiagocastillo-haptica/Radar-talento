@@ -4,6 +4,7 @@ import { authenticate } from '@/server/adminUsers';
 import { startSession } from '@/server/adminAuth';
 import { clientIp } from '@/server/http';
 import { getStore } from '@/server/store';
+import { isSameOrigin } from '@/server/origin';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,8 +12,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: Request) {
   const base = new URL(req.url).origin;
   const back = (error: string) => NextResponse.redirect(`${base}/admin/login?error=${error}`, 303);
-  const origin = req.headers.get('origin');
-  if (origin && new URL(origin).host !== req.headers.get('host')) return back('bad_origin');
+  if (!isSameOrigin(req.headers)) return back('bad_origin');
   try {
     const form = await req.formData();
     const user = await authenticate(await getStore(), String(form.get('email') ?? ''), String(form.get('password') ?? ''), clientIp(req));

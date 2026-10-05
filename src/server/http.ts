@@ -4,6 +4,7 @@ import { AppError } from './attempt';
 import { getStore, type Store } from './store';
 import { isRateLimited, recordRateEvent } from './ratelimit';
 import { currentAdminSession } from './adminAuth';
+import { isSameOrigin } from './origin';
 
 export function clientIp(req: Request): string {
   const xf = req.headers.get('x-forwarded-for');
@@ -74,9 +75,7 @@ export async function adminRoute(
     }
     const admin = session.email;
     if (opts.mutation) {
-      const origin = req.headers.get('origin');
-      const host = req.headers.get('host');
-      if (origin && host && new URL(origin).host !== host) {
+      if (!isSameOrigin(req.headers)) {
         return NextResponse.json({ error: { code: 'bad_origin', message: 'Origen no permitido' } }, { status: 403 });
       }
       if (!(req.headers.get('content-type') ?? '').includes('application/json')) {

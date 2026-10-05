@@ -85,3 +85,20 @@ describe('resumen de señales', () => {
   });
 });
 
+
+import { isSameOrigin } from '@/server/origin';
+
+describe('comprobación de mismo origen (CSRF)', () => {
+  const h = (o: Record<string, string>) => ({ get: (k: string) => o[k.toLowerCase()] ?? null });
+  it('acepta el mismo sitio y rechaza otros, sin fallar con Origin: null', () => {
+    expect(isSameOrigin(h({ 'sec-fetch-site': 'same-origin', origin: 'null' }))).toBe(true); // formulario con no-referrer
+    expect(isSameOrigin(h({ 'sec-fetch-site': 'none' }))).toBe(true);
+    expect(isSameOrigin(h({ 'sec-fetch-site': 'cross-site', origin: 'https://malo.com' }))).toBe(false);
+    expect(isSameOrigin(h({ 'sec-fetch-site': 'same-site' }))).toBe(false);
+    expect(isSameOrigin(h({ origin: 'null' }))).toBe(false); // sin Sec-Fetch-Site no se confía en "null"
+    expect(isSameOrigin(h({ origin: 'https://radar.vercel.app', host: 'radar.vercel.app' }))).toBe(true);
+    expect(isSameOrigin(h({ origin: 'https://otro.com', host: 'radar.vercel.app' }))).toBe(false);
+    expect(isSameOrigin(h({ origin: 'no es url', host: 'radar.vercel.app' }))).toBe(false);
+    expect(isSameOrigin(h({}))).toBe(true); // herramientas que no son navegador
+  });
+});
