@@ -127,12 +127,15 @@ details.case[open] > summary { margin-bottom: var(--space-3); }
 .q { margin: 0 0 var(--space-6); }
 .q label.q-label, .q legend { display: block; font-weight: 700; margin-bottom: var(--space-2); padding: 0; }
 .q-num { color: var(--naranja-haptica); margin-right: 0.4em; }
-textarea, input[type='text'], input[type='email'], select {
+textarea, input[type='text'], input[type='email'], input[type='password'], select {
   width: 100%; font: inherit; color: var(--text-body); background: var(--blanco);
   border: 2px solid var(--gris-400); border-radius: var(--radius-md); padding: var(--space-3);
 }
 textarea { min-height: 150px; resize: vertical; line-height: 1.5; }
-textarea:hover, input:hover, select:hover { border-color: var(--verde-petroleo); }
+textarea:hover, input:not([type='checkbox']):not([type='radio']):hover, select:hover { border-color: var(--verde-petroleo); }
+label { display: block; font-weight: 700; margin-bottom: var(--space-1); }
+.checkrow, .opt { font-weight: 400; }
+.q label.q-label { font-weight: 700; }
 textarea.over { border-color: var(--danger); }
 .counter { display: flex; justify-content: space-between; gap: var(--space-3); font-size: var(--fs-small); color: var(--text-muted); margin-top: var(--space-1); }
 .counter .over-msg { color: var(--danger); font-weight: 700; }
