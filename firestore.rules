@@ -1,0 +1,10 @@
+rules_version = '2';
+// Toda la lectura y escritura pasa por el servidor con credenciales de administrador (Admin SDK).
+// Ningún cliente (navegador, app móvil) debe acceder directo a Firestore: se niega todo.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
