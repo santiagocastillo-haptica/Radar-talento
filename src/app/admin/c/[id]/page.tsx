@@ -82,8 +82,8 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
             <CandidateActions id={inv.id} canReset={inv.status === 'en_curso' || inv.status === 'expirada'} canRegenerate={inv.status === 'creada' || inv.status === 'vencida'} />
           </section>
 
-          <section className="card warn" aria-labelledby="senales">
-            <h2 id="senales">Señales registradas</h2>
+          <section className="card subtle" aria-labelledby="senales">
+            <h2 id="senales">Señales de uso (para la conversación)</h2>
             <p><strong>{SIGNALS_DISCLAIMER}</strong></p>
             <div className="table-scroll" tabIndex={0} role="region" aria-label="Señales por parte">
               <table>
@@ -115,7 +115,7 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
             </div>
             {s.bursts.length ? (
               <>
-                <h3>Ráfagas de texto</h3>
+                <h3>Texto que apareció de golpe (esperable si pegó una respuesta de una herramienta)</h3>
                 <ul className="small">
                   {s.bursts.map((b, i) => (
                     <li key={i}>
@@ -126,7 +126,7 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
               </>
             ) : null}
             <p className="small muted">
-              Ráfaga = texto que crece demasiado rápido entre dos autoguardados para haberse escrito a mano (heurística). Un pegado puede tener explicaciones legítimas (p. ej. reescribir desde sus propios apuntes). No hay cámara, micrófono, grabación de pantalla ni huella del dispositivo.
+              Ráfaga = texto que crece demasiado rápido entre dos autoguardados para haberse escrito a mano (heurística). Como la IA está permitida, un pegado o una ráfaga es lo esperable; lo útil para la entrevista es qué le dio la persona a la herramienta y qué corrigió o decidió ella (pregunta 5 de la entrevista). No hay cámara, micrófono, grabación de pantalla ni huella del dispositivo.
             </p>
           </section>
         </div>
@@ -242,7 +242,7 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
         <section className="grid-2">
           <div className="card">
             <h2>Banderas de texto sin criterio propio</h2>
-            <p className="small muted">Son señales, no pruebas.</p>
+            <p className="small muted">Son señales, no pruebas. Usar IA es válido: lo que se observa es si hay criterio propio detrás del texto.</p>
             <ul>{TEXT_FLAGS.map((f) => <li key={f}>{f}</li>)}</ul>
           </div>
           <div className="card">
@@ -330,7 +330,7 @@ function OpenPair({
         <div className={'answer-box' + (q.text ? '' : ' empty')}>{q.text || 'Sin respuesta'}</div>
         <p className="small muted" style={{ marginTop: 8 }}>
           <span className="pill">{q.words}{q.wordLimit ? ` / ${q.wordLimit}` : groupLimit ? ` (límite total ${groupLimit})` : ''} palabras</span>
-          {sig ? <span className="pill warn">Pegados: {sig.pasteCount} ({sig.pasteChars} car.)</span> : null}
+          {sig ? <span className="pill">Pegado: {sig.pasteCount} {sig.pasteCount === 1 ? 'vez' : 'veces'} ({sig.pasteChars} car.)</span> : null}
           {tl.length ? <span className="pill">Autoguardados: {tl.length} · mayor salto +{maxJump} car.</span> : null}
           <span className="sr-only">Parte {partId}</span>
         </p>

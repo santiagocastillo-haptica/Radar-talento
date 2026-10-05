@@ -9,7 +9,7 @@ import type { SeedPart, SeedQuestion, SeedVariant } from './types';
 // ───────────────────────── 9.1 Reglas y aviso (pantalla de inicio) ─────────────────────────
 
 export const RULES_TEXT =
-  'Puedes usar IA en esta prueba donde lo consideres conveniente y donde sume valor a tus resultados: nos interesa tu criterio para decidir cuándo y cómo usarla. Lo que sí te pedimos es hacerla sin ayuda de otras personas. En la Parte 3 te pedimos contar con honestidad cómo usas la IA en tu trabajo real. Tienes 90 minutos desde que presionas Comenzar; el reloj no se detiene si cierras la página. Las partes se responden en orden y no se puede volver a una parte ya enviada. Registramos el tiempo por parte y algunas señales de uso de la página (por ejemplo, pegado de texto y cambios de pestaña) para tener una conversación posterior sobre tus respuestas; ninguna señal por sí sola descarta a nadie.';
+  'Puedes usar IA en esta prueba donde lo consideres conveniente y donde sume valor a tus resultados: nos interesa tu criterio para decidir cuándo y cómo usarla. Lo que sí te pedimos es hacerla sin ayuda de otras personas. En la Parte 3 te pedimos contar con honestidad cómo usas la IA en tu trabajo real. Tienes 90 minutos desde que presionas Comenzar; el reloj no se detiene si cierras la página. Las partes se responden en orden y no se puede volver a una parte ya enviada. Registramos el tiempo por parte y algunas señales de uso de la página (por ejemplo, pegado de texto y cambios de pestaña). Pegar texto es normal, también si viene de una herramienta de IA: las usamos solo para conversar contigo después sobre cómo trabajaste y qué aportaste tú; ninguna señal por sí sola descarta a nadie.';
 
 // ───────────────────────── 9.2 Tiempos sugeridos ─────────────────────────
 

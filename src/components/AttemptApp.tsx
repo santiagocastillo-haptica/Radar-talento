@@ -166,7 +166,7 @@ function Welcome({ view, call, onView }: { view: Extract<AttemptView, { status: 
       <section className="card subtle" aria-labelledby="datos">
         <h2 id="datos">Datos personales y señales registradas</h2>
         <p>
-          Registramos tus respuestas, el tiempo por parte y algunas señales de uso de la página (pegado de texto, cambios de pestaña y el ritmo de escritura). No usamos cámara, micrófono, grabación de pantalla ni identificación del dispositivo.
+          Registramos tus respuestas, el tiempo por parte y algunas señales de uso de la página (pegado de texto, cambios de pestaña y el ritmo de escritura). Pegar texto es normal, también si viene de una herramienta de IA: lo usamos solo para conversar contigo después. No usamos cámara, micrófono, grabación de pantalla ni identificación del dispositivo.
         </p>
         {view.privacyUrl ? (
           <p>

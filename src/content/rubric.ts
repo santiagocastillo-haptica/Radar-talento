@@ -163,7 +163,7 @@ export const TEXT_FLAGS = [
   '1B que no dialoga con 1A.',
   'Frases generales sin ninguna cifra del caso.',
   'Ninguna duda sobre los datos.',
-  'Ráfagas de texto largas con pegado.',
+  'Texto largo pegado que no se conecta con las cifras del caso ni con las demás respuestas (posible uso de IA sin criterio propio).',
 ];
 
 export const INTERVIEW_QUESTIONS = [
@@ -176,4 +176,4 @@ export const INTERVIEW_QUESTIONS = [
 ];
 
 export const SIGNALS_DISCLAIMER =
-  'Las señales son banderas para la conversación de entrevista. Nunca son motivo automático de descarte ni prueba de nada por sí solas.';
+  'En esta prueba se puede usar IA, así que pegar texto es esperable y no significa nada por sí solo. Estas señales sirven para preguntar en la entrevista qué hizo la persona con las herramientas y qué aportó ella (criterio, correcciones, cifras del caso). Nunca son motivo de descarte.';
