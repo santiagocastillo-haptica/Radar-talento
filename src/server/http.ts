@@ -3,7 +3,7 @@ import { ZodError } from 'zod';
 import { AppError } from './attempt';
 import { getStore, type Store } from './store';
 import { isRateLimited, recordRateEvent } from './ratelimit';
-import { currentAdmin } from './adminAuth';
+import { currentAdminSession } from './adminAuth';
 
 export function clientIp(req: Request): string {
   const xf = req.headers.get('x-forwarded-for');
@@ -64,11 +64,15 @@ export async function candidateRoute(req: Request, fn: (db: Store, token: string
 export async function adminRoute(
   req: Request,
   fn: (db: Store, admin: string) => Promise<unknown | Response>,
-  opts: { mutation?: boolean } = {},
+  opts: { mutation?: boolean; allowMustChange?: boolean } = {},
 ): Promise<Response> {
   try {
-    const admin = await currentAdmin();
-    if (!admin) return NextResponse.json({ error: { code: 'unauthorized', message: 'Sesión requerida' } }, { status: 401 });
+    const session = await currentAdminSession();
+    if (!session) return NextResponse.json({ error: { code: 'unauthorized', message: 'Sesión requerida' } }, { status: 401 });
+    if (session.mustChange && !opts.allowMustChange) {
+      return NextResponse.json({ error: { code: 'must_change_password', message: 'Debes cambiar tu contraseña antes de continuar' } }, { status: 403 });
+    }
+    const admin = session.email;
     if (opts.mutation) {
       const origin = req.headers.get('origin');
       const host = req.headers.get('host');

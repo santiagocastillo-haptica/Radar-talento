@@ -14,11 +14,6 @@ export function config() {
     privacyPolicyUrl: e.PRIVACY_POLICY_URL || '',
     /** Vacío por defecto: debe definirse con Jurídico antes de usar con candidatos reales. */
     dataRetentionDays: e.DATA_RETENTION_DAYS ? Number(e.DATA_RETENTION_DAYS) : null,
-    adminDomain: (e.ADMIN_ALLOWED_DOMAIN || 'haptica.co').toLowerCase(),
-    adminEmails: (e.ADMIN_EMAILS || '')
-      .split(',')
-      .map((s) => s.trim().toLowerCase())
-      .filter(Boolean),
     isProd: e.NODE_ENV === 'production',
   };
 }

@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { countWords } from '@/lib/words';
 import { formatClock, makeSync, remainingMs } from '@/lib/clock';
 import { summarizeSignals, type SignalRow } from '@/lib/signals';
-import { adminEmailAllowed } from '@/server/adminPolicy';
 
 describe('countWords', () => {
   it('cuenta palabras separadas por cualquier espacio', () => {
@@ -86,15 +85,3 @@ describe('resumen de señales', () => {
   });
 });
 
-describe('acceso del panel', () => {
-  it('solo cuentas del dominio de Háptica (y la lista blanca si existe)', () => {
-    expect(adminEmailAllowed('santiago.castillo@haptica.co', 'haptica.co', [])).toBe(true);
-    expect(adminEmailAllowed('SANTIAGO@HAPTICA.CO', 'haptica.co', [])).toBe(true);
-    expect(adminEmailAllowed('alguien@gmail.com', 'haptica.co', [])).toBe(false);
-    expect(adminEmailAllowed('x@haptica.co.evil.com', 'haptica.co', [])).toBe(false);
-    expect(adminEmailAllowed('x@evilhaptica.co', 'haptica.co', [])).toBe(false);
-    expect(adminEmailAllowed('a@haptica.co', 'haptica.co', ['b@haptica.co'])).toBe(false);
-    expect(adminEmailAllowed('b@haptica.co', 'haptica.co', ['b@haptica.co'])).toBe(true);
-    expect(adminEmailAllowed('', 'haptica.co', [])).toBe(false);
-  });
-});

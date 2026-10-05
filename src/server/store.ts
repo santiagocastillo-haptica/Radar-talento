@@ -331,6 +331,12 @@ export function getStore(): Promise<Store> {
       const store = new MemoryStore(path.join(process.cwd(), '.data', 'store.json'));
       const { seedIfEmpty } = await import('./seed');
       await seedIfEmpty(store);
+      // Solo desarrollo local: un administrador de prueba para poder abrir el panel.
+      const { listAdminUsers, createAdminUser } = await import('./adminUsers');
+      if ((await listAdminUsers(store)).length === 0) {
+        await createAdminUser(store, { email: 'dev@haptica.local', name: 'Dev local', password: 'desarrollo-local-123', actor: 'dev-bootstrap' });
+        console.log('[dev] Panel local: dev@haptica.local / desarrollo-local-123');
+      }
       return store;
     })();
     g.__hapticaStore.catch(() => {

@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "seed": "tsx scripts/seed.ts",
+    "admin:create": "tsx scripts/create-admin.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

@@ -1,21 +1,20 @@
 import { redirect } from 'next/navigation';
-import { currentAdmin, devLoginEnabled, microsoftConfigured } from '@/server/adminAuth';
-import { config } from '@/server/config';
+import { currentAdminSession } from '@/server/adminAuth';
 
 export const dynamic = 'force-dynamic';
 
 const ERRORS: Record<string, string> = {
-  denied: 'Esa cuenta no está autorizada para el panel. Usa tu cuenta de Háptica.',
-  oauth: 'No se pudo completar el inicio de sesión. Inténtalo de nuevo.',
-  ms_not_configured: 'El inicio de sesión con Microsoft no está configurado (faltan MS_TENANT_ID, MS_CLIENT_ID o MS_CLIENT_SECRET).',
+  bad_credentials: 'Correo o contraseña incorrectos.',
+  rate_limited: 'Demasiados intentos. Espera unos minutos e inténtalo de nuevo.',
+  bad_origin: 'No se pudo validar el origen de la solicitud. Recarga la página.',
+  server: 'Ocurrió un error inesperado. Inténtalo de nuevo.',
 };
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
-  if (await currentAdmin()) redirect('/admin');
+  if (await currentAdminSession()) redirect('/admin');
   const { error } = await searchParams;
-  const c = config();
   return (
-    <main className="wrap">
+    <main className="wrap" style={{ maxWidth: 480 }}>
       <p className="eyebrow">Háptica · Panel del equipo</p>
       <h1>Entrar</h1>
       <span className="rail" aria-hidden="true" />
@@ -24,25 +23,22 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <p>{ERRORS[error] ?? 'No se pudo entrar.'}</p>
         </div>
       ) : null}
-      <p>El acceso es solo para cuentas @{c.adminDomain}.</p>
-      {microsoftConfigured() ? (
-        <a className="btn" href="/api/auth/login">
-          Entrar con Microsoft
-        </a>
-      ) : (
-        <p className="muted">El inicio de sesión con Microsoft no está configurado en este entorno.</p>
-      )}
-      {devLoginEnabled() ? (
-        <form action="/api/auth/dev-login" method="post" className="card subtle" style={{ marginTop: 24 }}>
-          <p className="eyebrow">Solo desarrollo local</p>
-          <label htmlFor="dev-email">Correo @{c.adminDomain}</label>
-          <input id="dev-email" name="email" type="email" required defaultValue={`dev@${c.adminDomain}`} />
-          <p />
-          <button className="btn outline" type="submit">
-            Entrar (sin Microsoft)
-          </button>
-        </form>
-      ) : null}
+      <form action="/api/auth/login" method="post">
+        <p>
+          <label htmlFor="email">Correo</label>
+          <input id="email" name="email" type="email" required autoComplete="username" autoFocus />
+        </p>
+        <p>
+          <label htmlFor="password">Contraseña</label>
+          <input id="password" name="password" type="password" required autoComplete="current-password" />
+        </p>
+        <button className="btn" type="submit">
+          Entrar
+        </button>
+      </form>
+      <p className="small muted" style={{ marginTop: 24 }}>
+        ¿No tienes acceso o olvidaste tu contraseña? Pídele a otra persona administradora del panel que te cree una cuenta o restablezca tu contraseña.
+      </p>
     </main>
   );
 }

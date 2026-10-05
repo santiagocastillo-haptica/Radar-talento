@@ -11,14 +11,14 @@ Plataforma web en español para aplicar la prueba asíncrona de selección de **
 npm install
 cp .env.example .env.local     # en Windows: copy .env.example .env.local
 npm run dev                    # http://localhost:3000
-npm test                       # 48 pruebas automáticas
+npm test                       # pruebas automáticas
 ```
 
-Sin `FIREBASE_SERVICE_ACCOUNT`, en desarrollo la app usa un **almacén en memoria con archivo en `./.data`** y se siembra sola con el contenido de la prueba. Con `ADMIN_DEV_LOGIN=true` puedes entrar al panel en `/admin/login` escribiendo un correo `@haptica.co` (se ignora en producción). Para borrar los datos locales: elimina la carpeta `.data`.
+Sin `FIREBASE_SERVICE_ACCOUNT`, en desarrollo la app usa un **almacén en memoria con archivo en `./.data`** y se siembra sola con el contenido de la prueba. En local el panel (`/admin/login`) tiene un administrador de prueba: `dev@haptica.local` / `desarrollo-local-123` (solo existe en ese almacén local). Para borrar los datos locales: elimina la carpeta `.data`.
 
 ## Variables de entorno
 
-Ver [`.env.example`](.env.example). Las obligatorias en producción: `FIREBASE_SERVICE_ACCOUNT`, `SESSION_SECRET`, `TOKEN_HASH_SECRET`, `CRON_SECRET`, `APP_URL`. Para el acceso real del equipo: `MS_TENANT_ID`, `MS_CLIENT_ID`, `MS_CLIENT_SECRET`.
+Ver [`.env.example`](.env.example). Las obligatorias en producción: `FIREBASE_SERVICE_ACCOUNT`, `SESSION_SECRET`, `TOKEN_HASH_SECRET`, `CRON_SECRET`, `APP_URL`.
 
 ## Despliegue (GitHub → Vercel + Firestore)
 
@@ -27,9 +27,9 @@ Ver [`.env.example`](.env.example). Las obligatorias en producción: `FIREBASE_S
    2. *Project settings → Service accounts → Generate new private key*. Guarda el JSON (no lo subas a GitHub).
    3. Publica las reglas (niegan todo acceso directo de clientes): `npx firebase-tools deploy --only firestore:rules --project <id>`; o pega el contenido de [`firestore.rules`](firestore.rules) en la consola.
 2. **GitHub:** repositorio **privado** (contiene el contenido y la clave de la prueba).
-3. **Vercel:** *Add New → Project →* importa el repositorio. En *Environment Variables* carga las de `.env.example` (el JSON de la cuenta de servicio va en `FIREBASE_SERVICE_ACCOUNT`; deja `ADMIN_DEV_LOGIN` sin definir). Despliega.
+3. **Vercel:** *Add New → Project →* importa el repositorio. En *Environment Variables* carga las de `.env.example` (el JSON de la cuenta de servicio va en `FIREBASE_SERVICE_ACCOUNT`, en texto o en base64). Despliega.
 4. **Sembrar el contenido** (una vez, y cada vez que cambie el contenido): con `FIREBASE_SERVICE_ACCOUNT` en tu entorno local, `npm run seed`.
-5. **Microsoft Entra ID** (login del panel): en Azure → *App registrations → New registration* (solo este tenant), *Redirect URI (Web)* = `https://<tu-dominio>/api/auth/callback`; crea un *client secret*; copia *Tenant ID*, *Client ID* y el secreto a Vercel. El acceso queda restringido a `@haptica.co` y al tenant.
+5. **Primera persona administradora del panel** (una vez): con `FIREBASE_SERVICE_ACCOUNT` en tu entorno local, `npm run admin:create -- correo@ejemplo.com "Nombre"`. Muestra una contraseña temporal aleatoria **una sola vez**; al entrar a `/admin/login` se te pide cambiarla. Después, agrega más personas desde **Panel → Usuarios** (no hace falta el script). Si pierdes el acceso de todas las cuentas: `npm run admin:create -- correo@ejemplo.com --reset`.
 6. Define `PRIVACY_POLICY_URL` y `DATA_RETENTION_DAYS` (ver pendientes).
 
 > Hosting estático (GitHub Pages) **no sirve**: hace falta servidor para el reloj y la clave.
@@ -44,7 +44,8 @@ Ver [`.env.example`](.env.example). Las obligatorias en producción: `FIREBASE_S
 | `invitations/{id}/answers/{qid}` | Respuesta actual de cada pregunta. |
 | `invitations/{id}/signals/*` | Señales (pegados, salidas de pestaña, tamaño de texto por autoguardado). |
 | `auditLog/*` | Registro de auditoría solo-añadir. |
-| `rateLimits/*` | Intentos fallidos de token por IP. |
+| `adminUsers/*` | Personas con acceso al panel (hash de contraseña, estado, versión de sesión). |
+| `rateLimits/*` | Intentos fallidos (token de candidato por IP; inicio de sesión del panel por IP y correo). |
 
 No se necesitan índices compuestos (`firestore.indexes.json` está vacío).
 
@@ -68,7 +69,7 @@ No se necesitan índices compuestos (`firestore.indexes.json` está vacío).
 - **Reinicio del reloj:** conserva respuestas y partes enviadas; solo para pruebas en curso o expiradas.
 - **1B no muestra las respuestas de 1A** (no hay retroceso), pero sí el caso original.
 - **Señales:** pegados (cantidad y caracteres), salidas de pestaña (cantidad y tiempo), y una línea de tiempo de tamaño del texto medida por el servidor en cada autoguardado (~5 s). "Ráfaga" = ≥ 200 caracteres a ≥ 15 car/s entre dos autoguardados (heurística editable en `src/lib/signals.ts`). Son banderas para la entrevista; el panel lo dice.
-- **Acceso:** Microsoft Entra ID (OIDC con PKCE) restringido al dominio y tenant. El acceso de desarrollo (`ADMIN_DEV_LOGIN`) solo funciona fuera de producción.
+- **Acceso al panel:** correo + contraseña propios guardados en Firestore (`adminUsers`), sin Google ni Microsoft. Contraseñas con scrypt y sal por usuario (mínimo 12 caracteres); las temporales (alta o restablecimiento) obligan a cambiarlas al primer ingreso; bloqueo de 15 min tras 5 fallos por correo o 10 por IP; cambiar o restablecer la contraseña y desactivar la cuenta cierran las sesiones abiertas (sesión de 8 h en cookie firmada, `HttpOnly`); no se puede desactivar al último administrador activo; todas las altas, restablecimientos y desactivaciones quedan en `auditLog` (sin contraseñas).
 - **Rúbrica y preguntas de entrevista** viven en `src/content/rubric.ts` (referencia del panel); el contenido de la prueba, en `src/content/variants.ts` y se carga con `npm run seed`. Para añadir una variante de un rol, agrega otro objeto con distinto `slug`. **No edites una variante que ya se aplicó**: crea una nueva.
 - Zona horaria del panel: America/Bogota.
 
@@ -76,7 +77,7 @@ No se necesitan índices compuestos (`firestore.indexes.json` está vacío).
 
 1. **Retención de datos:** `DATA_RETENTION_DAYS` está vacío a propósito. Definirlo con **Jurídico** (y, si se decide borrar, implementar el job de borrado; hoy no hay borrado automático).
 2. **URL de la política de tratamiento de datos** (`PRIVACY_POLICY_URL`): hoy el aviso de datos de la pantalla de inicio es un texto mínimo y no enlaza a ninguna política hasta que se configure. Jurídico debe revisar ese texto.
-3. **Registro de la app en Microsoft Entra** y configuración de `MS_*` (sin esto el panel solo se puede abrir con el acceso de desarrollo, que está apagado en producción).
+3. **Crear la primera cuenta del panel** (paso 5 del despliegue) y compartir las contraseñas temporales solo por un canal seguro.
 4. Revisar con Jurídico el aviso de señales y el texto de reglas (el texto de reglas es literal del brief).
 
 ## Riesgos conocidos
@@ -102,3 +103,4 @@ src/components/ interfaz del candidato y del panel
 tests/          pruebas automáticas (vitest)
 scripts/seed.ts carga el contenido en Firestore
 ```
+

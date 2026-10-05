@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { requireAdminPage, microsoftConfigured } from '@/server/adminAuth';
+import { requireAdminPage } from '@/server/adminAuth';
 import { getStore } from '@/server/store';
 import { listInvitations } from '@/server/review';
 import { STATUS_LABEL } from '@/server/status';
@@ -21,7 +21,6 @@ export default async function AdminHome() {
   const pending: string[] = [];
   if (!c.privacyPolicyUrl) pending.push('PRIVACY_POLICY_URL (enlace a la política de datos personales de Háptica en la pantalla de inicio)');
   if (c.dataRetentionDays === null) pending.push('DATA_RETENTION_DAYS (retención de datos: definirla con Jurídico antes de usar la plataforma con candidatos reales)');
-  if (!microsoftConfigured()) pending.push('Inicio de sesión con Microsoft (MS_TENANT_ID, MS_CLIENT_ID, MS_CLIENT_SECRET)');
 
   return (
     <>
