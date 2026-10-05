@@ -162,6 +162,17 @@ export async function setActive(store: Store, email: string, active: boolean, ac
   await audit(store, { actor, action: active ? 'admin_user_activated' : 'admin_user_deactivated', details: { email: normalizeEmail(email) } }, now);
 }
 
+/** Elimina una cuenta del panel. Solo si ya está DESACTIVADA y no es la propia. Queda en la auditoría. */
+export async function deleteAdminUser(store: Store, email: string, actor: string, now = new Date()) {
+  const target = normalizeEmail(email);
+  if (target === normalizeEmail(actor)) throw new AppError('self_delete', 409, 'No puedes eliminar tu propia cuenta');
+  const doc = await store.get(userPath(target));
+  if (!doc) throw new AppError('not_found', 404, 'Usuario no encontrado');
+  if (doc.active) throw new AppError('still_active', 409, 'Primero desactiva la cuenta; solo se pueden eliminar cuentas desactivadas');
+  await audit(store, { actor, action: 'admin_user_deleted', details: { email: target } }, now);
+  await store.delete(userPath(target));
+}
+
 // ───────────────────────── Inicio de sesión ─────────────────────────
 
 const LOGIN_WINDOW_S = 900; // 15 min

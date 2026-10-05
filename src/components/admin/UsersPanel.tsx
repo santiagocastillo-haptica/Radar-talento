@@ -42,6 +42,14 @@ export function UsersPanel({ users, me }: { users: U[]; me: string }) {
     router.refresh();
   }
 
+  async function remove(email: string) {
+    if (!window.confirm(`Se eliminará definitivamente la cuenta de ${email}. Esta acción no se puede deshacer. ¿Continuar?`)) return;
+    setError(null);
+    const res = await adminFetch('POST', '/api/admin/users/delete', { email });
+    if (!res.ok) return setError(res.message);
+    router.refresh();
+  }
+
   async function toggle(email: string, active: boolean) {
     setError(null);
     const res = await adminFetch('POST', '/api/admin/users/active', { email, active });
@@ -126,6 +134,11 @@ export function UsersPanel({ users, me }: { users: U[]; me: string }) {
                     {u.email !== me ? (
                       <button className="btn sm outline" onClick={() => toggle(u.email, !u.active)}>
                         {u.active ? 'Desactivar' : 'Reactivar'}
+                      </button>
+                    ) : null}{' '}
+                    {u.email !== me && !u.active ? (
+                      <button className="btn sm outline" style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }} onClick={() => remove(u.email)}>
+                        Eliminar
                       </button>
                     ) : null}
                   </td>

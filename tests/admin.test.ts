@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import ExcelJS from 'exceljs';
 import type { Store } from '@/server/store';
 import { AppError, getAttemptView, saveAnswers, submitPart } from '@/server/attempt';
-import { regenerateLink, resetClock } from '@/server/invitations';
+import { deleteInvitation, regenerateLink, resetClock } from '@/server/invitations';
 import { getCandidateDetail, saveEvaluation, saveNote } from '@/server/review';
 import { buildExport, toCsv, toXlsx } from '@/server/export';
 import { at, fillAnswers, freshDb, invite, min, startedAttempt, T0, variantOf, viewPart } from './helpers';
@@ -72,15 +72,62 @@ describe('reinicio del reloj', () => {
 });
 
 describe('regenerar enlace', () => {
-  it('el enlace anterior deja de servir y queda auditado; no aplica si ya inició', async () => {
+  it('sin iniciar: el enlace anterior deja de servir y queda auditado', async () => {
     const inv = await invite(db);
     const next = await regenerateLink(db, inv.id, 'admin@haptica.co', at(T0, min(60)));
     expect(next.token).not.toBe(inv.token);
     expect(await code(getAttemptView(db, inv.token, at(T0, min(61))))).toBe('invalid_token');
     expect((await getAttemptView(db, next.token, at(T0, min(61)))).status).toBe('creada');
+  });
 
-    const started = await startedAttempt(db);
-    expect(await code(regenerateLink(db, started.id, 'admin@haptica.co'))).toBe('already_started');
+  it('en curso (la persona perdió el enlace): cambia el enlace pero el reloj y lo escrito siguen igual', async () => {
+    const { id, token, view } = await startedAttempt(db);
+    const p = await viewPart(db, token, at(T0, min(1)));
+    await saveAnswers(db, token, '1A', [{ questionId: p.questions[0].id, text: 'avance antes de perder el enlace' }], undefined, at(T0, min(2)));
+    const next = await regenerateLink(db, id, 'admin@haptica.co', at(T0, min(30)));
+
+    expect(await code(getAttemptView(db, token, at(T0, min(31))))).toBe('invalid_token'); // el viejo ya no sirve
+    const v = await getAttemptView(db, next.token, at(T0, min(31)));
+    if (v.status !== 'en_curso' || view.status !== 'en_curso') throw new Error('debería seguir en curso');
+    expect(v.deadlineAt).toBe(view.deadlineAt); // el reloj NO se reinició ni se extendió
+    expect(v.part.saved[p.questions[0].id].text).toBe('avance antes de perder el enlace');
+    const entry = (await getCandidateDetail(db, id, at(T0, min(31))))!.audit.find((a) => a.action === 'link_regenerated')!;
+    expect(entry.details.inProgress).toBe(true);
+  });
+
+  it('terminada o expirada: no hay enlace que regenerar', async () => {
+    const expired = await startedAttempt(db);
+    expect(await code(regenerateLink(db, expired.id, 'admin@haptica.co', at(T0, min(100))))).toBe('not_regenerable');
+  });
+});
+
+describe('eliminar invitación', () => {
+  it('exige motivo y el nombre exacto; borra todo y no deja nombre ni correo en la auditoría', async () => {
+    const { id, token } = await startedAttempt(db);
+    const p = await viewPart(db, token, at(T0, min(1)));
+    await saveAnswers(db, token, '1A', [{ questionId: p.questions[0].id, text: 'respuesta' }], [{ kind: 'paste', questionId: p.questions[0].id, chars: 50 }], at(T0, min(2)));
+    await saveEvaluation(db, id, '01', 'solida', 'admin@haptica.co');
+
+    expect(await code(deleteInvitation(db, id, 'admin@haptica.co', '', 'Ana Prueba'))).toBe('reason_required');
+    expect(await code(deleteInvitation(db, id, 'admin@haptica.co', 'Pidió borrar sus datos', 'Otra Persona'))).toBe('confirm_mismatch');
+    expect(await db.get(`invitations/${id}`)).not.toBeNull(); // nada se borró aún
+
+    const r = await deleteInvitation(db, id, 'admin@haptica.co', 'Pidió borrar sus datos', '  ana prueba ', at(T0, min(5)));
+    expect(r.deletedAnswers).toBe(1);
+    expect(r.deletedSignals).toBeGreaterThanOrEqual(1);
+    expect(await db.get(`invitations/${id}`)).toBeNull();
+    expect(await db.query(`invitations/${id}/answers`)).toHaveLength(0);
+    expect(await db.query(`invitations/${id}/signals`)).toHaveLength(0);
+    expect(await code(getAttemptView(db, token, at(T0, min(6))))).toBe('invalid_token');
+
+    const audit = await db.query('auditLog', { where: [['invitationId', '==', id]] });
+    const deleted = audit.find((a) => a.data.action === 'invitation_deleted')!;
+    expect(deleted.data.reason).toBe('Pidió borrar sus datos');
+    expect(deleted.data.actor).toBe('admin@haptica.co');
+    const all = JSON.stringify(audit.map((a) => a.data));
+    expect(all).not.toContain('Ana Prueba');
+    expect(all).not.toContain('ana@example.com');
+    expect(await code(deleteInvitation(db, id, 'admin@haptica.co', 'otra vez', 'Ana Prueba'))).toBe('not_found');
   });
 });
 

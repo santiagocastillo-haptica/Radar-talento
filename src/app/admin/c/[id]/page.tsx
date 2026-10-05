@@ -80,7 +80,7 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
               </tbody>
             </table>
             <p />
-            <CandidateActions id={inv.id} canReset={inv.status === 'en_curso' || inv.status === 'expirada'} canRegenerate={inv.status === 'creada' || inv.status === 'vencida'} />
+            <CandidateActions id={inv.id} name={inv.name} canReset={inv.status === 'en_curso' || inv.status === 'expirada'} canRegenerate={inv.status === 'creada' || inv.status === 'vencida' || inv.status === 'en_curso'} inProgress={inv.status === 'en_curso'} />
           </section>
 
           <section className="card subtle" aria-labelledby="senales">

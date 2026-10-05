@@ -57,7 +57,12 @@ export async function createInvitation(
   return { id, token, link: linkFor(token), expiresAt: expires.toISOString() };
 }
 
-/** Un enlace no se puede volver a mostrar (solo se guarda su hash): se emite uno nuevo y el anterior deja de servir. Solo si no se ha iniciado. */
+/**
+ * Un enlace no se puede volver a mostrar (solo se guarda su hash): se emite uno nuevo y el anterior deja de servir.
+ *  - Sin iniciar (o vencido): reinicia la vigencia de 24 h.
+ *  - En curso (la persona perdió el enlace): el RELOJ NO SE TOCA; solo cambia el enlace. Queda en auditoría.
+ *  - Terminada o expirada: no aplica.
+ */
 export async function regenerateLink(store: Store, invitationId: string, actor: string, now = new Date()): Promise<NewInvitation> {
   const token = generateToken();
   const expires = new Date(now.getTime() + config().inviteValidHours * 3600_000);
@@ -65,7 +70,15 @@ export async function regenerateLink(store: Store, invitationId: string, actor: 
     const doc = await t.get(invPath(invitationId));
     if (!doc) throw new AppError('not_found', 404, 'Invitación no encontrada');
     const inv = toInv(invitationId, doc);
-    if (inv.startedAt) throw new AppError('already_started', 409, 'La prueba ya inició: el enlace no se puede regenerar');
+    const status = computeStatus(inv, now);
+    if (status === 'enviada' || status === 'expirada') {
+      throw new AppError('not_regenerable', 409, 'La prueba ya terminó: no hay enlace que regenerar');
+    }
+    if (status === 'en_curso') {
+      await t.merge(invPath(invitationId), { tokenHash: hashToken(token) });
+      await audit(t, { actor, action: 'link_regenerated', invitationId, details: { inProgress: true, deadlineAt: inv.deadlineAt!.toISOString() } }, now);
+      return;
+    }
     await t.merge(invPath(invitationId), { tokenHash: hashToken(token), expiresAt: expires.toISOString(), openedAt: null });
     await audit(
       t,
@@ -135,4 +148,45 @@ export async function audit(
     reason: e.reason ?? null,
     details: e.details ?? {},
   });
+}
+
+/**
+ * Elimina DEFINITIVAMENTE una invitación y todo lo asociado (respuestas, señales, evaluación y notas).
+ * Exige motivo y que se escriba el nombre de la persona. En la auditoría (inmutable) queda quién, cuándo y por qué,
+ * pero NO el nombre ni el correo de la persona eliminada.
+ */
+export async function deleteInvitation(
+  store: Store,
+  invitationId: string,
+  actor: string,
+  reason: string,
+  confirmName: string,
+  now = new Date(),
+): Promise<{ deletedAnswers: number; deletedSignals: number }> {
+  const why = (reason ?? '').trim();
+  if (why.length < 5) throw new AppError('reason_required', 422, 'El motivo es obligatorio (mínimo 5 caracteres)');
+  const doc = await store.get(invPath(invitationId));
+  if (!doc) throw new AppError('not_found', 404, 'Invitación no encontrada');
+  const inv = toInv(invitationId, doc);
+  if ((confirmName ?? '').trim().toLowerCase() !== inv.name.trim().toLowerCase()) {
+    throw new AppError('confirm_mismatch', 422, 'El nombre escrito no coincide con el de la persona');
+  }
+  const answers = await store.query(`${invPath(invitationId)}/answers`);
+  const signals = await store.query(`${invPath(invitationId)}/signals`);
+  await audit(
+    store,
+    {
+      actor,
+      action: 'invitation_deleted',
+      invitationId,
+      reason: why,
+      details: { role: inv.role, status: computeStatus(inv, now), hadStarted: !!inv.startedAt, answers: answers.length, signals: signals.length },
+    },
+    now,
+  );
+  // Primero los hijos y al final el documento principal: si algo se interrumpe, se puede repetir la eliminación.
+  const paths = [...answers.map((a) => `${invPath(invitationId)}/answers/${a.id}`), ...signals.map((s) => `${invPath(invitationId)}/signals/${s.id}`)];
+  for (let i = 0; i < paths.length; i += 25) await Promise.all(paths.slice(i, i + 25).map((p) => store.delete(p)));
+  await store.delete(invPath(invitationId));
+  return { deletedAnswers: answers.length, deletedSignals: signals.length };
 }

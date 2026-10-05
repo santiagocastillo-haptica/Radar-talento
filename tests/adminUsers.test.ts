@@ -148,3 +148,20 @@ describe('contraseña copiada con espacios', () => {
     expect(await code(authenticate(s, 'ana@haptica.co', temporaryPassword + 'x', '5.5.5.5', T))).toBe('bad_credentials');
   });
 });
+
+import { deleteAdminUser } from '@/server/adminUsers';
+
+describe('eliminar personas del equipo', () => {
+  it('solo cuentas desactivadas y ajenas; queda en la auditoría', async () => {
+    const s = new MemoryStore();
+    await createAdminUser(s, { email: 'ana@haptica.co', actor: 't' }, T);
+    await createAdminUser(s, { email: 'luis@haptica.co', actor: 'ana@haptica.co' }, T);
+    expect(await code(deleteAdminUser(s, 'luis@haptica.co', 'ana@haptica.co'))).toBe('still_active');
+    expect(await code(deleteAdminUser(s, 'ana@haptica.co', 'ana@haptica.co'))).toBe('self_delete');
+    expect(await code(deleteAdminUser(s, 'nadie@haptica.co', 'ana@haptica.co'))).toBe('not_found');
+    await setActive(s, 'luis@haptica.co', false, 'ana@haptica.co', T);
+    await deleteAdminUser(s, 'luis@haptica.co', 'ana@haptica.co', T);
+    expect(await getAdminUser(s, 'luis@haptica.co')).toBeNull();
+    expect(JSON.stringify(await s.query('auditLog'))).toContain('admin_user_deleted');
+  });
+});
