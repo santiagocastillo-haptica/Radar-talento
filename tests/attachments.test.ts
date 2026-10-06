@@ -76,7 +76,7 @@ describe('contenido ajustado (documento de Háptica)', () => {
     expect(p1b.questions.map((q) => [q.number, q.label, q.wordLimit, q.allowImage])).toEqual([
       [4, 'Ambigüedades', 100, false],
       [5, 'Reescritura', 150, false],
-      [6, 'Nota para la abogada de Jurídico', 100, false],
+      [6, 'Nota para la Directora Legal', 100, false],
     ]);
   });
 

@@ -198,7 +198,7 @@ export const LSD_CRITERIA_BY_Q: Record<string, Criterion> = {
     key: 'lsd-investigacion',
     title: 'Investigación en 3 semanas',
     skills: '01, 03',
-    operativo: 'Propone hablar con usuarios y con la abogada, y al menos una actividad concreta que cabe en 3 semanas.',
+    operativo: 'Propone hablar con usuarios y con la Directora Legal, y al menos una actividad concreta que cabe en 3 semanas.',
     avanzado:
       'Define a quién (quienes reclamaron y quienes no; quienes firmaron) y mide comprensión por conducta (explicar con sus palabras, resolver un escenario) en las 3 cláusulas con más quejas; secuencia realista y usa a Jurídico para validar sin depender de ella.',
     alertas: 'Solo una encuesta de autorreporte; plan que excede las 3 semanas; solo habla con quienes se quejaron; ignora cuáles son las 3 cláusulas.',
@@ -233,7 +233,7 @@ export const LSD_CRITERIA_BY_Q: Record<string, Criterion> = {
   },
   '1B:6': {
     key: 'lsd-nota',
-    title: 'Nota para la abogada de Jurídico',
+    title: 'Nota para la Directora Legal',
     skills: '02, 06',
     operativo: 'Dice qué simplificó y qué dejó casi literal.',
     avanzado:

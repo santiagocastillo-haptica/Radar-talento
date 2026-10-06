@@ -280,7 +280,7 @@ const LSD_OWN_ITEMS: SeedQuestion[] = [
   {
     number: 9,
     kind: 'mc',
-    prompt: 'Tienes 30 minutos con la abogada de Jurídico para avanzar la revisión de tu reescritura de una cláusula. ¿Cómo los usas?',
+    prompt: 'Tienes 30 minutos con la Directora Legal para avanzar la revisión de tu reescritura de una cláusula. ¿Cómo los usas?',
     options: [
       { text: 'Le envías el borrador completo y le pides que lo revise y te lo devuelva.' },
       { text: 'Le explicas primero el contexto completo del proyecto.' },
@@ -459,7 +459,7 @@ const LSD_CLAUSE =
   'CLÁUSULA NOVENA. PAGO ANTICIPADO. EL DEUDOR podrá efectuar pagos anticipados, totales o parciales, previo aviso escrito a LA COOPERATIVA con una antelación no inferior a cinco (5) días. Cuando el pago anticipado, individual o acumulado en un periodo de doce (12) meses, supere el veinte por ciento (20%) del saldo de capital, LA COOPERATIVA cobrará una compensación equivalente al dos por ciento (2%) del valor prepagado, sin perjuicio de los intereses causados a la fecha del pago. Los pagos parciales se aplicarán, en primer lugar, a intereses, comisiones y gastos, y el excedente a capital, sin que ello implique reducción del valor de la cuota, salvo que EL DEUDOR solicite por escrito la reliquidación del plan de pagos. La compensación aquí prevista no se aplicará a pagos efectuados con recursos provenientes de refinanciación con la misma COOPERATIVA.';
 
 const LSD_VARIANT: SeedVariant = {
-  slug: 'lsd-contrato-credito-v4',
+  slug: 'lsd-contrato-credito-v5',
   role: 'legal_service_designer',
   name: 'Legal Service Designer: Contrato de crédito digital',
   caseTitle: 'Contrato de crédito digital',
@@ -512,7 +512,7 @@ const LSD_VARIANT: SeedVariant = {
         label: 'Investigación',
         wordLimit: 150,
         prompt:
-          'Investigación (máx. 150 palabras): tienes 3 semanas y acceso a la abogada de Jurídico. ¿Cómo verificarías si los usuarios entienden las 3 cláusulas que concentran más quejas? ¿Con quién hablarías y qué actividades harías?',
+          'Investigación (máx. 150 palabras): tienes 3 semanas y acceso a la Directora Legal. ¿Cómo verificarías si los usuarios entienden las 3 cláusulas que concentran más quejas? ¿Con quién hablarías y qué actividades harías?',
       },
       {
         number: 3,
@@ -542,10 +542,10 @@ const LSD_VARIANT: SeedVariant = {
       {
         number: 6,
         kind: 'open',
-        label: 'Nota para la abogada de Jurídico',
+        label: 'Nota para la Directora Legal',
         wordLimit: 100,
         prompt:
-          'Nota para la abogada de Jurídico (máx. 100 palabras): ¿qué simplificaste y qué dejaste casi literal, y por qué? ¿Propondrías que tu versión reemplace el texto original o que se muestre junto a él? ¿Qué riesgo ves en cada opción?',
+          'Nota para la Directora Legal (máx. 100 palabras): ¿qué simplificaste y qué dejaste casi literal, y por qué? ¿Propondrías que tu versión reemplace el texto original o que se muestre junto a él? ¿Qué riesgo ves en cada opción?',
       },
     ],
   }),
