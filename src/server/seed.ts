@@ -28,6 +28,7 @@ export async function seedContent(store: Store): Promise<{ variants: number; que
           label: q.label ?? null,
           prompt: q.prompt,
           wordLimit: q.wordLimit ?? null,
+          allowImage: !!q.allowImage,
         };
         if (q.kind === 'mc') {
           if (!q.options || q.correctIndex === undefined || !q.skill) {
@@ -60,7 +61,24 @@ export async function seedContent(store: Store): Promise<{ variants: number; que
     await store.set(`variants/${v.slug}`, doc);
     await store.set(`variantKeys/${v.slug}`, { keys });
   }
+  await retireOldVariants(store);
   return { variants: VARIANTS.length, questions: questionCount };
+}
+
+/**
+ * Retira las variantes que ya no están en el contenido vigente (active=false) sin borrarlas: las invitaciones
+ * que ya las usan siguen funcionando, pero ninguna invitación nueva las recibe.
+ */
+export async function retireOldVariants(store: Store): Promise<string[]> {
+  const current = new Set(VARIANTS.map((v) => v.slug));
+  const retired: string[] = [];
+  for (const d of await store.query('variants')) {
+    if (!current.has(d.id) && d.data.active !== false) {
+      await store.merge(`variants/${d.id}`, { active: false });
+      retired.push(d.id);
+    }
+  }
+  return retired;
 }
 
 export async function seedIfEmpty(store: Store): Promise<void> {

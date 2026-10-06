@@ -9,6 +9,8 @@ export interface QuestionView {
   label: string | null;
   prompt: string;
   wordLimit: number | null;
+  /** Se puede adjuntar una imagen opcional. */
+  allowImage: boolean;
   /** Solo en ítems de selección múltiple, ya barajadas para este candidato. Sin letra original ni marca de correcta. */
   options?: { id: string; text: string }[];
 }
@@ -16,6 +18,8 @@ export interface QuestionView {
 export interface SavedAnswer {
   text?: string;
   optionId?: string;
+  /** Metadatos de la imagen adjunta (los bytes se piden aparte). */
+  image?: { mime: string; size: number };
 }
 
 export interface PartView {

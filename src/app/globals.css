@@ -199,3 +199,8 @@ dialog::backdrop { background: rgb(0 50 55 / 0.6); }
   .card { padding: var(--space-4); }
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; animation: none !important; } }
+
+/* Imagen adjunta opcional */
+.attach { margin-top: var(--space-3); padding: var(--space-3); border: 1px dashed var(--gris-400); }
+.attach p { margin: 0 0 var(--space-2); }
+.attach-img { display: block; max-width: 100%; max-height: 260px; margin: 0 0 var(--space-3); border: 1px solid var(--border-subtle); }

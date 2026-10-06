@@ -34,3 +34,10 @@ export const evaluationBody = z.object({
   status: z.enum(['solida', 'indicio', 'sin_evidencia']).nullable(),
 });
 export const noteBody = z.object({ part: partSchema, note: z.string().max(20000) });
+
+export const attachmentPutBody = z.object({
+  part: partSchema,
+  questionId: z.string().min(1).max(20),
+  data: z.string().min(16).max(900_000),
+});
+export const attachmentDeleteBody = z.object({ part: partSchema, questionId: z.string().min(1).max(20) });

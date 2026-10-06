@@ -156,6 +156,7 @@ async function buildPartView(store: Store, inv: InvRow, partId: PartId, startedA
       label: q.label,
       prompt: q.prompt.replaceAll('{{rol}}', roleLabel),
       wordLimit: q.wordLimit,
+      allowImage: !!q.allowImage,
     };
     if (q.kind === 'mc') {
       const byId = new Map(q.options!.map((o) => [o.id, o]));
@@ -168,6 +169,11 @@ async function buildPartView(store: Store, inv: InvRow, partId: PartId, startedA
   const ids = new Set(qs.map((q) => q.id));
   for (const a of await store.query(`${invPath(inv.id)}/answers`)) {
     if (ids.has(a.id)) saved[a.id] = { text: a.data.text ?? undefined, optionId: a.data.optionId ?? undefined };
+  }
+
+  for (const q of qs) {
+    const meta = inv.attachments[q.id];
+    if (meta) saved[q.id] = { ...saved[q.id], image: { mime: meta.mime, size: meta.size } };
   }
 
   const view: PartView = {
@@ -394,4 +400,66 @@ export async function submitPart(
     }
   });
   return getAttemptView(store, token, now);
+}
+
+// ───────────────────────── Imagen adjunta opcional ─────────────────────────
+
+/** Tope por imagen (ya reducida en el navegador). base64 ≈ 800 KB: cabe en un documento de Firestore (1 MiB). */
+export const MAX_IMAGE_BYTES = 600 * 1024;
+const MAX_IMAGES_PER_ATTEMPT = 8;
+
+/** Tipo real por los primeros bytes (no se confía en el tipo declarado por el cliente). */
+export function sniffImage(buf: Buffer): 'image/jpeg' | 'image/png' | 'image/webp' | null {
+  if (buf.length > 12 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return 'image/jpeg';
+  if (buf.length > 12 && buf.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return 'image/png';
+  if (buf.length > 12 && buf.subarray(0, 4).toString('latin1') === 'RIFF' && buf.subarray(8, 12).toString('latin1') === 'WEBP') return 'image/webp';
+  return null;
+}
+
+/** Adjunta (o reemplaza) la imagen de una pregunta de la parte activa; `null` la quita. Mismas reglas de tiempo que escribir. */
+export async function setAttachment(
+  store: Store,
+  token: string,
+  part: PartId,
+  questionId: string,
+  image: { base64: string } | null,
+  now = new Date(),
+): Promise<{ attached: boolean; mime?: string; size?: number }> {
+  return withWritableAttempt(store, token, now, async (c, current) => {
+    assertActivePart(part, current);
+    const q = c.variant.questions.find((x) => x.id === questionId && x.part === part);
+    if (!q) throw new AppError('bad_question', 422, 'Pregunta que no pertenece a la parte activa');
+    if (!q.allowImage) throw new AppError('no_image_allowed', 422, 'Esta pregunta no admite imagen');
+    const path = `${invPath(c.inv.id)}/attachments/${q.id}`;
+
+    if (image === null) {
+      await c.t.delete(path);
+      c.patch.attachments = { [q.id]: null };
+      return { attached: false };
+    }
+
+    if (typeof image.base64 !== 'string' || !/^[A-Za-z0-9+/]+={0,2}$/.test(image.base64)) {
+      throw new AppError('bad_image', 422, 'La imagen no es válida');
+    }
+    const bytes = Buffer.from(image.base64, 'base64');
+    if (bytes.length > MAX_IMAGE_BYTES) throw new AppError('image_too_large', 413, 'La imagen es demasiado grande (máx. 600 KB)');
+    const mime = sniffImage(bytes);
+    if (!mime) throw new AppError('bad_image', 422, 'Solo se admiten imágenes JPG, PNG o WebP');
+    const others = Object.entries(c.inv.attachments).filter(([id, m]) => m && id !== q.id).length;
+    if (others >= MAX_IMAGES_PER_ATTEMPT) throw new AppError('too_many_images', 422, 'Se alcanzó el máximo de imágenes');
+
+    await c.t.set(path, { mime, size: bytes.length, data: image.base64, updatedAt: now.toISOString() });
+    c.patch.attachments = { [q.id]: { mime, size: bytes.length, updatedAt: now.toISOString() } };
+    return { attached: true, mime, size: bytes.length };
+  });
+}
+
+/** La propia persona puede volver a ver su imagen (p. ej. tras recargar). No requiere que el tiempo siga corriendo. */
+export async function getOwnAttachment(store: Store, token: string, questionId: string): Promise<{ mime: string; bytes: Buffer }> {
+  const inv = await findInvitationByToken(store, token);
+  if (!inv || !inv.startedAt) throw new AppError('invalid_token', 404, 'Enlace no válido');
+  if (!/^[0-9A-Za-z-]{1,20}$/.test(questionId) || !inv.attachments[questionId]) throw new AppError('not_found', 404, 'Sin imagen');
+  const doc = await store.get(`${invPath(inv.id)}/attachments/${questionId}`);
+  if (!doc) throw new AppError('not_found', 404, 'Sin imagen');
+  return { mime: doc.mime as string, bytes: Buffer.from(doc.data as string, 'base64') };
 }

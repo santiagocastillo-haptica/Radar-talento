@@ -53,7 +53,7 @@ describe('la clave de la Parte 2 nunca sale hacia el candidato', () => {
     }
     const p2 = await viewPart(db, token, at(T0, min(t)));
     for (const q of p2.questions) {
-      expect(Object.keys(q).sort()).toEqual(['id', 'kind', 'label', 'number', 'options', 'prompt', 'wordLimit']);
+      expect(Object.keys(q).sort()).toEqual(['allowImage', 'id', 'kind', 'label', 'number', 'options', 'prompt', 'wordLimit']);
       for (const o of q.options!) expect(Object.keys(o).sort()).toEqual(['id', 'text']);
     }
     // La clave vive en otro documento que el flujo del candidato no lee.
@@ -95,8 +95,9 @@ describe('contenido cargado por el seed', () => {
 
   it('la clave coincide con la tabla de la sección 9.5 (ítems 1–10 comunes y 11–12 por rol)', async () => {
     const expected: Record<string, string> = {
-      'sd-renovacion-polizas': 'ACDBDBCACBAD',
-      'lsd-contrato-credito': 'ACDBDBCACBCB',
+      // Ítems 9 y 12 reescritos en la versión ajustada; ver README (la tabla del documento conserva letras de la versión anterior).
+      'sd-renovacion-polizas-v2': 'ACDBDBCABBAB',
+      'lsd-contrato-credito-v2': 'ACDBDBCABBCC',
     };
     for (const [slug, letters] of Object.entries(expected)) {
       const variant = (await db.get(`variants/${slug}`))!;
@@ -110,16 +111,16 @@ describe('contenido cargado por el seed', () => {
   });
 
   it('las habilidades de la clave coinciden con la sección 9.5', async () => {
-    const keys = (await db.get('variantKeys/sd-renovacion-polizas'))!.keys as Record<string, { skill: string }>;
+    const keys = (await db.get('variantKeys/sd-renovacion-polizas-v2'))!.keys as Record<string, { skill: string }>;
     const skills = Array.from({ length: 12 }, (_, i) => keys[`2-${i + 1}`].skill);
     expect(skills).toEqual(['01', '01', '01,02', '03', '02', '05', '06', '08', '09', '04', '02', '03']);
-    const lsd = (await db.get('variantKeys/lsd-contrato-credito'))!.keys as Record<string, { skill: string }>;
+    const lsd = (await db.get('variantKeys/lsd-contrato-credito-v2'))!.keys as Record<string, { skill: string }>;
     expect([lsd['2-11'].skill, lsd['2-12'].skill]).toEqual(['03', '01']);
   });
 
   it('el seed es idempotente (mismos ids de opción)', async () => {
-    const before = JSON.stringify(await db.get('variants/sd-renovacion-polizas'));
+    const before = JSON.stringify(await db.get('variants/sd-renovacion-polizas-v2'));
     await seedContent(db);
-    expect(JSON.stringify(await db.get('variants/sd-renovacion-polizas'))).toBe(before);
+    expect(JSON.stringify(await db.get('variants/sd-renovacion-polizas-v2'))).toBe(before);
   });
 });

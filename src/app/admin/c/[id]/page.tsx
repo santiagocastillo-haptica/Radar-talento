@@ -12,6 +12,7 @@ import { NoteEditor } from '@/components/admin/NoteEditor';
 import { Remaining } from '@/components/admin/Remaining';
 import {
   DOUBTFUL_DATA,
+  INTERVIEW_NOTE,
   INTERVIEW_QUESTIONS,
   PART1_CRITERIA,
   PART3_INDICATORS,
@@ -166,7 +167,7 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
         {(['1A', '1B'] as const).map((pid) => (
           <PartSection key={pid} p={part(pid)} d={d}>
             {part(pid).questions.map((q) => (
-              <OpenPair key={q.id} q={q} partId={pid} signals={s} criterion={CRITERIA_BY_Q[`${pid}:${q.number}`]} />
+              <OpenPair key={q.id} invitationId={inv.id} q={q} partId={pid} signals={s} criterion={CRITERIA_BY_Q[`${pid}:${q.number}`]} />
             ))}
             {pid === '1A' ? (
               <div className="card subtle">
@@ -218,7 +219,7 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
         {/* ───────── Parte 3 ───────── */}
         <PartSection p={part('3')} d={d}>
           {part('3').questions.map((q) => (
-            <OpenPair key={q.id} q={q} partId="3" signals={s} groupLimit={part('3').groupWordLimit} />
+            <OpenPair key={q.id} invitationId={inv.id} q={q} partId="3" signals={s} groupLimit={part('3').groupWordLimit} />
           ))}
           <p className="small muted">
             Palabras totales: {part('3').questions.reduce((a, q) => a + q.words, 0)} / {part('3').groupWordLimit}
@@ -249,6 +250,7 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
           <div className="card">
             <h2>Preguntas modelo para la entrevista de defensa</h2>
             <ol>{INTERVIEW_QUESTIONS.map((q) => <li key={q}>{q}</li>)}</ol>
+            <p className="small muted">{INTERVIEW_NOTE}</p>
           </div>
         </section>
 
@@ -296,12 +298,14 @@ function PartSection({ p, d, children }: { p: PartReview; d: { invitation: { sta
 }
 
 function OpenPair({
+  invitationId,
   q,
   partId,
   signals,
   criterion,
   groupLimit,
 }: {
+  invitationId: string;
   q: QuestionReview;
   partId: PartId;
   signals: import('@/lib/signals').SignalSummary;
@@ -329,6 +333,16 @@ function OpenPair({
       </div>
       <div>
         <div className={'answer-box' + (q.text ? '' : ' empty')}>{q.text || 'Sin respuesta'}</div>
+        {q.image ? (
+          <p style={{ marginTop: 8 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <a href={`/api/admin/invitations/${invitationId}/attachments/${q.id}`} target="_blank" rel="noopener noreferrer">
+              <img src={`/api/admin/invitations/${invitationId}/attachments/${q.id}`} alt={`Imagen adjunta a la respuesta ${q.number}`} style={{ maxWidth: '100%', maxHeight: 320, border: '1px solid var(--border-subtle)' }} />
+            </a>
+            <br />
+            <span className="small muted">Imagen adjunta ({Math.round(q.image.size / 1024)} KB). Clic para ampliar.</span>
+          </p>
+        ) : null}
         <p className="small muted" style={{ marginTop: 8 }}>
           <span className="pill">{q.words}{q.wordLimit ? ` / ${q.wordLimit}` : groupLimit ? ` (límite total ${groupLimit})` : ''} palabras</span>
           {sig ? <span className="pill">Pegado: {sig.pasteCount} {sig.pasteCount === 1 ? 'vez' : 'veces'} ({sig.pasteChars} car.)</span> : null}

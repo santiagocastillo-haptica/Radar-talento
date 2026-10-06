@@ -208,10 +208,10 @@ describe('calificación, evaluación y exportación', () => {
     expect(candidatos.rows).toHaveLength(1);
     expect(candidatos.headers.join('|')).not.toMatch(/total|puntaje/i);
     expect(candidatos.headers.filter((h) => h.startsWith('P2 ítem'))).toHaveLength(12);
-    expect(respuestas.rows).toHaveLength(8); // 1A(3) + 1B(2) + 3(3)
+    expect(respuestas.rows).toHaveLength(7); // 1A(3) + 1B(2) + 3(2)
     expect(respuestas.rows.filter((r) => r[3] === '1A')).toHaveLength(3);
     expect(respuestas.rows.filter((r) => r[3] === '1B')).toHaveLength(2);
-    expect(respuestas.rows.filter((r) => r[3] === '3')).toHaveLength(3);
+    expect(respuestas.rows.filter((r) => r[3] === '3')).toHaveLength(2);
 
     const buf = await toXlsx([candidatos, respuestas]);
     const wb = new ExcelJS.Workbook();

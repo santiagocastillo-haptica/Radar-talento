@@ -13,7 +13,7 @@ export const RULES_TEXT =
 
 // ───────────────────────── 9.2 Tiempos sugeridos ─────────────────────────
 
-export const SUGGESTED_MINUTES = { '1A': 25, '1B': 15, '2': 20, '3': 20 } as const;
+export const SUGGESTED_MINUTES = { '1A': 30, '1B': 15, '2': 20, '3': 20 } as const;
 export const MARGIN_MINUTES = 10;
 
 // ───────────────────────── 9.5 Parte 2: ítems comunes (1 a 10) ─────────────────────────
@@ -136,14 +136,14 @@ const COMMON_ITEMS: SeedQuestion[] = [
     number: 9,
     kind: 'mc',
     prompt:
-      'Esta semana tienes 16 horas efectivas y tres entregas: (A) entregable de un cliente grande, vence el viernes, faltan 4 h; (B) documento interno que bloquea a un colega, vence el jueves, requiere 6 h en versión completa; (C) propuesta comercial, vence el miércoles, requiere 10 h. ¿Qué haces?',
+      'Estás al límite de tu capacidad esta semana y tienes tres compromisos pendientes: (A) entregable crítico para un cliente clave (vence el viernes); (B) iniciativa de Háptica que mantiene bloqueado a un compañero (vence el jueves); (C) propuesta de trabajo para otro proyecto (vence el miércoles). ¿Cómo priorizas?',
     options: [
-      { text: 'Haces C, luego B completo, y A con las horas que queden.' },
-      { text: 'Haces las tres con horas extra para no decepcionar a nadie.' },
-      { text: 'Avisas a tu colega y acuerdas una versión mínima de B (unas 2 h) que lo desbloquee; con las 14 h restantes completas C (10 h) y A (4 h).' },
-      { text: 'Haces A y B completos y entregas C incompleta.' },
+      { text: 'Te enfocas únicamente en las entregas de clientes externos (A y C) y dejas el documento interno para la siguiente semana.' },
+      { text: 'Acuerdas con tu compañero entregarle una versión mínima/esquemática de (B) para desbloquearlo rápidamente, y usas el tiempo restante para completar la propuesta (C) y el entregable (A).' },
+      { text: 'Haces horas extra sin avisar para entregar el 100% del alcance de las tres tareas.' },
+      { text: 'Entregas la propuesta (C) incompleta para garantizar la documentación interna de (B) a detalle.' },
     ],
-    correctIndex: 2,
+    correctIndex: 1,
     skill: '09',
   },
   {
@@ -183,14 +183,14 @@ const SD_ITEMS: SeedQuestion[] = [
     number: 12,
     kind: 'mc',
     prompt:
-      'Tienes 3 días, ningún desarrollador disponible y quieres probar la idea de un asesor virtual para reclamos. ¿Qué prototipo haces?',
+      'Tienes 3 días para validar si los clientes estarían dispuestos a resolver reclamos mediante un asistente virtual antes de invertir en su desarrollo técnico. ¿Qué prototipo planteas?',
     options: [
-      { text: 'Una maqueta navegable de alta fidelidad.' },
+      { text: 'Diseñas maqueta en Figma del flujo de conversación y le preguntas a los usuarios en una encuesta si lo usarían.' },
+      { text: 'Ejecutas un piloto "Mago de oz": un miembro del equipo responde manualmente por mensajería simulando ser el asistente para evaluar las interacciones reales de 10 usuarios.' },
       { text: 'Una encuesta a 200 clientes para saber si usarían un asesor virtual.' },
-      { text: 'Esperar a tener capacidad de desarrollo para probar algo real.' },
-      { text: 'Un piloto manual: una persona atiende por mensajería a unos 8 clientes reales siguiendo el guion del asesor, y registras dónde se rompe.' },
+      { text: 'Pospones la validación hasta contar con presupuesto para contratar una plataforma de IA.' },
     ],
-    correctIndex: 3,
+    correctIndex: 1,
     skill: '03',
   },
 ];
@@ -213,54 +213,56 @@ const LSD_ITEMS: SeedQuestion[] = [
   {
     number: 12,
     kind: 'mc',
-    prompt: '¿Qué evidencia es más sólida para saber si un usuario entiende una cláusula?',
+    prompt: '¿Qué evidencia demuestra con mayor certeza que un usuario comprendió las consecuencias de una cláusula legal compleja?',
     options: [
-      { text: 'El 90% marcó "entendí" en una casilla al final del contrato.' },
-      { text: 'Que explique con sus palabras, o decida en un escenario concreto, qué pasaría con su crédito.' },
-      { text: 'El tiempo que pasó en la pantalla del contrato.' },
-      { text: 'La cantidad de quejas posteriores sobre esa cláusula.' },
+      { text: 'Que el 95% de los usuarios haya marcado la casilla obligatoria de "He leído y acepto los términos".' },
+      { text: 'Que el usuario pase más de 2 minutos navegando en la pantalla donde se encuentra la cláusula.' },
+      { text: 'Que el usuario pueda explicar con sus propias palabras qué ocurriría en un caso práctico o escenario hipotético regulado por esa cláusula.' },
+      { text: 'Que el área jurídica valide que el texto utiliza un vocabulario accesible.' },
     ],
-    correctIndex: 1,
+    correctIndex: 2,
     skill: '01',
   },
 ];
 
 // ───────────────────────── Preguntas de la Parte 1 ─────────────────────────
 
-const Q_1A: SeedQuestion[] = [
+/** Imagen opcional: "Opcional: adjuntar imagen si lo consideras necesario". */
+const Q_1A = (para: string): SeedQuestion[] => [
   {
     number: 1,
     kind: 'open',
-    label: 'Diagnóstico',
-    wordLimit: 120,
-    prompt:
-      'Diagnóstico (máx. 120 palabras): ¿cuál es el problema que más vale la pena resolver y qué datos de arriba lo sustentan? Indica también un dato que te genere dudas y por qué.',
+    label: 'Hipótesis',
+    wordLimit: 200,
+    allowImage: true,
+    prompt: 'Hipótesis (máx. 200 palabras): ¿Cuáles son tus principales hipótesis a validar en la investigación?',
   },
   {
     number: 2,
     kind: 'open',
-    label: 'Hipótesis',
-    wordLimit: 100,
-    prompt:
-      'Hipótesis (máx. 100 palabras): ¿qué hipótesis quieres validar primero y cómo lo harías esta semana con lo que ya tienes?',
+    label: 'Investigación',
+    wordLimit: 200,
+    allowImage: true,
+    prompt: 'Investigación (máx. 200 palabras): Tienes 3 semanas para realizar tu investigación. ¿A qué actores propones dentro de la muestra? ¿Qué actividades propondrías?',
   },
   {
     number: 3,
     kind: 'open',
-    label: 'Decisión',
+    label: 'Resultados',
     wordLimit: 100,
-    prompt:
-      'Decisión (máx. 100 palabras): con capacidad para solo 2 cambios, ¿cuáles harías y cuál NO harías aunque alguien del negocio lo pida?',
+    allowImage: true,
+    prompt: `Resultados (máx. 100 palabras): ¿Qué entregables propondrías ${para}? Sustenta tu respuesta.`,
   },
 ];
 
-const Q_1B_COMMON: SeedQuestion = {
+const Q_1B_ADJUST = (allowImage: boolean): SeedQuestion => ({
   number: 4,
   kind: 'open',
   label: 'Ajuste ante el giro',
-  wordLimit: 100,
-  prompt: '¿Qué cambia en tu decisión de 1A y qué se mantiene? (máx. 100 palabras)',
-};
+  wordLimit: 200,
+  allowImage,
+  prompt: '¿Qué cambia en tu decisión de 1A y qué se mantiene? (máx. 200 palabras)',
+});
 
 // ───────────────────────── Parte 3 ─────────────────────────
 
@@ -272,22 +274,28 @@ const Q_3: SeedQuestion[] = [
   {
     number: 1,
     kind: 'open',
-    prompt:
-      '¿Qué hiciste, con qué herramienta y para qué parte del trabajo? Si no la usaste, ¿por qué decidiste no hacerlo?',
+    allowImage: true,
+    prompt: '¿Qué hiciste, con qué herramienta y para qué parte del trabajo? Si no la usaste, ¿por qué decidiste no hacerlo?',
   },
-  { number: 2, kind: 'open', prompt: '¿Qué salió mal, te sorprendió o tuviste que corregir?' },
   {
-    number: 3,
+    number: 2,
     kind: 'open',
+    allowImage: true,
     prompt:
-      'Dentro de tres años, ¿qué parte de tu trabajo como {{rol}} crees que la IA hará mejor que tú y qué parte seguirás haciendo tú? Justifícalo con algo concreto, no con una idea general.',
+      'Dentro de tres años, ¿qué parte de tu trabajo como {{rol}} crees que la IA hará mejor que tú y qué parte seguirás haciendo tú? Justifica tu respuesta.',
   },
 ];
 
-function buildParts(opts: { q1b5: SeedQuestion; roleItems: SeedQuestion[] }): SeedPart[] {
+function buildParts(opts: {
+  minutes1A: number;
+  q1a: SeedQuestion[];
+  q1b4: SeedQuestion;
+  q1b5: SeedQuestion;
+  roleItems: SeedQuestion[];
+}): SeedPart[] {
   return [
-    { part: '1A', title: 'Parte 1A', suggestedMinutes: SUGGESTED_MINUTES['1A'], questions: Q_1A },
-    { part: '1B', title: 'Parte 1B', suggestedMinutes: SUGGESTED_MINUTES['1B'], questions: [Q_1B_COMMON, opts.q1b5] },
+    { part: '1A', title: 'Parte 1A', suggestedMinutes: opts.minutes1A, questions: opts.q1a },
+    { part: '1B', title: 'Parte 1B', suggestedMinutes: SUGGESTED_MINUTES['1B'], questions: [opts.q1b4, opts.q1b5] },
     {
       part: '2',
       title: 'Parte 2: selección múltiple',
@@ -307,10 +315,10 @@ function buildParts(opts: { q1b5: SeedQuestion; roleItems: SeedQuestion[] }): Se
   ];
 }
 
-// ───────────────────────── 9.3 Variante Service Designer ─────────────────────────
+// ───────────────────────── Variante Service Designer ─────────────────────────
 
 const SD_VARIANT: SeedVariant = {
-  slug: 'sd-renovacion-polizas',
+  slug: 'sd-renovacion-polizas-v2',
   role: 'service_designer',
   name: 'Service Designer: Renovación de pólizas',
   caseTitle: 'Renovación de pólizas',
@@ -318,7 +326,7 @@ const SD_VARIANT: SeedVariant = {
     {
       type: 'p',
       lead: 'Contexto.',
-      text: 'Seguros Meridiano (aseguradora ficticia) vende pólizas de auto. Hace un año lanzó la renovación digital en app y web. El negocio quiere subir la renovación digital de 31% a 50% en dos trimestres, sin aumentar el presupuesto. Tú entras como Service Designer al proyecto.',
+      text: 'Seguros Meridiano (aseguradora ficticia) vende pólizas de auto. Hace un año lanzó la renovación digital en app y web. El negocio quiere realizar una migración de clientes a canales digitales y aumentar la renovación digital de 31% a 60%. Tú entras como Service Designer al proyecto.',
     },
     { type: 'h', text: 'Datos del último trimestre (40.000 pólizas por vencer)' },
     {
@@ -347,31 +355,32 @@ const SD_VARIANT: SeedVariant = {
     { type: 'quote', text: 'Me llegó el recordatorio, abrí la app y el precio era otro. Pensé que me estaban estafando, así que llamé.' },
     { type: 'quote', text: 'Quería quitar una cobertura y no encontré dónde, así que llamé.' },
     { type: 'quote', text: 'Pagué con la tarjeta, me dio error y no sé si quedó renovada. Preferí llamar.' },
-    { type: 'h', text: 'Restricción' },
-    { type: 'p', text: 'Hay un squad de desarrollo con capacidad para 2 cambios medianos este trimestre.' },
   ],
   twist: [
     {
       type: 'p',
-      text: 'La gerente comercial te escribe: por decisión de la gerencia, la app no puede explicar ni justificar el aumento de tarifa; eso se comunica solo por carta física. Además, el call center perdió 20% de su capacidad por rotación y no se repondrá este trimestre.',
+      text: 'La gerente comercial te escribe: por decisión de la gerencia, la investigación tendrá una duración de 2 semanas y tenemos una semana para actividades presenciales y otra solo para actividades virtuales.',
     },
   ],
   parts: buildParts({
+    minutes1A: 30,
+    q1a: Q_1A('para la Aseguradora'),
+    q1b4: Q_1B_ADJUST(true),
     roleItems: SD_ITEMS,
     q1b5: {
       number: 5,
       kind: 'open',
       label: 'Mensaje a la gerente comercial',
-      wordLimit: 80,
-      prompt: 'Escribe el mensaje que le enviarías a la gerente comercial (máx. 80 palabras, tono de mensaje real).',
+      wordLimit: 100,
+      prompt: 'Escribe el mensaje que le enviarías a la gerente comercial (máx. 100 palabras, tono de mensaje real).',
     },
   }),
 };
 
-// ───────────────────────── 9.4 Variante Legal Service Designer ─────────────────────────
+// ───────────────────────── Variante Legal Service Designer ─────────────────────────
 
 const LSD_VARIANT: SeedVariant = {
-  slug: 'lsd-contrato-credito',
+  slug: 'lsd-contrato-credito-v2',
   role: 'legal_service_designer',
   name: 'Legal Service Designer: Contrato de crédito digital',
   caseTitle: 'Contrato de crédito digital',
@@ -387,7 +396,6 @@ const LSD_VARIANT: SeedVariant = {
       items: [
         'Créditos aprobados: 30.000. Firmaron: 28.200 (94%).',
         'Quejas recibidas: 1.300. Por tema: comisiones y costos 34%; cobro por pago anticipado 22%; reporte a centrales de riesgo 15%; atención y tiempos 18%; otros 11%.',
-        'Tiempo mediano en la pantalla del contrato antes de aceptar: 9 segundos.',
         'Encuesta posterior a la firma (320 respuestas): 82% afirma "entendí las condiciones de mi crédito".',
       ],
     },
@@ -395,19 +403,17 @@ const LSD_VARIANT: SeedVariant = {
     { type: 'quote', text: 'Firmé porque necesitaba la plata; igual nadie lee eso.' },
     { type: 'quote', text: 'Pensé que si pagaba antes me cobraban menos intereses, no que me iban a cobrar una penalidad.' },
     { type: 'quote', text: 'No sabía que reportaban a centrales si me atrasaba un día.' },
-    { type: 'h', text: 'Restricciones' },
-    {
-      type: 'p',
-      text: 'Jurídico: el texto de las cláusulas no se puede modificar; sí se puede cambiar cómo se presentan, en qué orden y qué se explica alrededor. Capacidad: 1 squad de producto y 10 horas semanales de una abogada.',
-    },
   ],
   twist: [
     {
       type: 'p',
-      text: 'Jurídico informa que (a) cualquier resumen en lenguaje simple debe aprobarse cláusula por cláusula y (b) el regulador exige conservar evidencia de que el cliente tuvo acceso al texto completo. Además, Producto dice que el flujo no admite más de una pantalla adicional.',
+      text: 'Jurídico informa que se requiere una adición al proyecto añadiendo como entregable adicional, un contrato que aplique en términos de inclusión al segmento baby boomers en el que se incluya un "audio contrato".',
     },
   ],
   parts: buildParts({
+    minutes1A: 25,
+    q1a: Q_1A('para la cooperativa'),
+    q1b4: Q_1B_ADJUST(false),
     roleItems: LSD_ITEMS,
     q1b5: {
       number: 5,

@@ -69,7 +69,7 @@ export const PART1_CRITERIA: Record<'1A' | '1B', Criterion[]> = {
       skills: '01, 03',
       operativo: 'Plausible pero general.',
       avanzado: 'Falsable y validable en una semana con lo disponible.',
-      alertas: 'Propone investigación larga que ignora el plazo.',
+      alertas: 'Propone una investigación larga que ignora el plazo y los recursos.',
     },
     {
       key: 'decision',
@@ -93,7 +93,7 @@ export const PART1_CRITERIA: Record<'1A' | '1B', Criterion[]> = {
       key: 'mensaje',
       title: 'Mensaje',
       skills: '06',
-      operativo: 'Claro y cordial.',
+      operativo: 'Claro y cordial; explica su propuesta.',
       avanzado: 'Reconoce la restricción y pide una decisión concreta u ofrece alternativa.',
       alertas: 'Tono de informe, largo, sin pedido concreto.',
     },
@@ -105,9 +105,9 @@ export const DOUBTFUL_DATA: Record<Role, string[]> = {
   service_designer: [
     'Los motivos de llamada suman 105%.',
     'El NPS compara 210 y 95 respuestas de poblaciones distintas.',
-    'El alza de tarifa de 14% confunde el abandono.',
+    'El alza de tarifa de 14% confunde la lectura del abandono.',
     'La muestra de 500 llamadas no tiene criterio de selección.',
-    '16.600 pólizas no renovadas y 15.200 que nunca abrieron pesan más que el canal.',
+    'Cuestionar la meta: 16.600 pólizas no renovadas (41,5%) y 15.200 que nunca abrieron la renovación pesan más que el canal por el que renuevan los demás.',
   ],
   legal_service_designer: [
     '82% dice haber entendido pero la mediana de lectura es 9 segundos (autorreporte contra conducta).',
@@ -163,6 +163,7 @@ export const TEXT_FLAGS = [
   '1B que no dialoga con 1A.',
   'Frases generales sin ninguna cifra del caso.',
   'Ninguna duda sobre los datos.',
+  'Estructura impecable sin postura.',
   'Texto largo pegado que no se conecta con las cifras del caso ni con las demás respuestas (posible uso de IA sin criterio propio).',
 ];
 
@@ -170,10 +171,13 @@ export const INTERVIEW_QUESTIONS = [
   'En 1A elegiste [cambio] y descartaste [otro]. Si tuvieras capacidad para 3 cambios, ¿qué sumarías y por qué?',
   'Dijiste que [dato] te generaba dudas. ¿Cómo comprobarías si importa?',
   'En 1B cambiaste [decisión]. ¿Qué te hizo cambiar, y qué no cambiarías aunque la restricción fuera peor?',
-  'En el ítem [n] descartaste la opción [x]. ¿Por qué?',
+  'En el ítem [n] descartaste la opción [x]. ¿Por qué? (usar ítems que falló o que tardó en responder)',
   'En la Parte 3 contaste [ejemplo]. ¿Qué le diste a la herramienta y qué corregiste a mano?',
-  'Si hay banderas: "Cuéntanos cómo abordaste la prueba: en qué orden y dónde te frenaste." (tono neutro, no acusatorio)',
+  'Si hay banderas: "Cuéntanos cómo abordaste la prueba: en qué orden y dónde te frenaste." Con tono neutro: la pregunta abre la conversación, no acusa.',
 ];
+
+export const INTERVIEW_NOTE =
+  'Antes de entrevistar, cruzar el resultado con el Talent Review del CV y el portafolio: lo que la prueba confirma sube de Indicio a Evidencia sólida; lo que contradice se pregunta.';
 
 export const SIGNALS_DISCLAIMER =
   'En esta prueba se puede usar IA, así que pegar texto es esperable y no significa nada por sí solo. Estas señales sirven para preguntar en la entrevista qué hizo la persona con las herramientas y qué aportó ella (criterio, correcciones, cifras del caso). Nunca son motivo de descarte.';

@@ -5,6 +5,7 @@ import type { AnswerInput, AttemptView, QuestionView, SavedAnswer, SaveResult, S
 import { formatClock, remainingMs, serverNowMs, type ClockSync } from '@/lib/clock';
 import { countWords } from '@/lib/words';
 import { Blocks } from './Blocks';
+import { ImageAttach } from './ImageAttach';
 import type { Call } from './AttemptApp';
 
 type RunningView = Extract<AttemptView, { status: 'en_curso' }>;
@@ -31,11 +32,13 @@ function limitState(questions: QuestionView[], answers: Record<string, SavedAnsw
 export function Running({
   view,
   call,
+  callBlob,
   syncRef,
   onView,
 }: {
   view: RunningView;
   call: Call;
+  callBlob: (path: string) => Promise<Blob | null>;
   syncRef: React.RefObject<ClockSync | null>;
   onView: (v: AttemptView) => void;
 }) {
@@ -264,6 +267,11 @@ export function Running({
                 onChange={(text) => setAnswer(q.id, { text })}
                 onBlur={() => void flush()}
                 onPaste={(e) => onPaste(q.id, e)}
+                attach={
+                  q.allowImage ? (
+                    <ImageAttach questionId={q.id} part={part.id} initial={part.saved[q.id]?.image} call={call} callBlob={callBlob} />
+                  ) : null
+                }
               />
             ) : (
               <McField
@@ -328,6 +336,7 @@ function OpenField({
   onChange,
   onBlur,
   onPaste,
+  attach,
 }: {
   q: QuestionView;
   value: string;
@@ -337,6 +346,7 @@ function OpenField({
   onChange: (v: string) => void;
   onBlur: () => void;
   onPaste: (e: React.ClipboardEvent) => void;
+  attach?: React.ReactNode;
 }) {
   const words = countWords(value);
   return (
@@ -370,6 +380,7 @@ function OpenField({
           </span>
         ) : null}
       </div>
+      {attach}
     </div>
   );
 }

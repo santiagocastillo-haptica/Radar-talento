@@ -78,6 +78,8 @@ export interface QuestionReview {
   wordLimit: number | null;
   text: string | null;
   words: number;
+  /** Imagen adjunta opcional (los bytes se piden aparte al panel). */
+  image?: { mime: string; size: number };
   mc?: McReview;
 }
 
@@ -167,6 +169,8 @@ export async function getCandidateDetail(store: Store, id: string, now = new Dat
           text: (a?.text as string | undefined) ?? null,
           words: countWords(a?.text),
         };
+        const meta = inv.attachments[q.id];
+        if (meta) base.image = { mime: meta.mime, size: meta.size };
         if (q.kind === 'mc') {
           const key = keysDoc.keys[q.id];
           const opts = q.options!;
@@ -262,4 +266,11 @@ export async function saveNote(store: Store, invitationId: string, part: PartId,
   if (note.length > 20000) throw new AppError('too_long', 422, 'Nota demasiado larga');
   await assertExists(store, invitationId);
   await store.merge(invPath(invitationId), { notes: { [part]: { note, by: actor, at: now.toISOString() } } });
+}
+
+/** Bytes de la imagen adjunta de una pregunta, para mostrarla en el panel. */
+export async function getAttachmentForAdmin(store: Store, invitationId: string, questionId: string): Promise<{ mime: string; bytes: Buffer } | null> {
+  if (!/^[0-9a-f-]{36}$/i.test(invitationId) || !/^[0-9A-Za-z-]{1,20}$/.test(questionId)) return null;
+  const doc = await store.get(`${invPath(invitationId)}/attachments/${questionId}`);
+  return doc ? { mime: doc.mime as string, bytes: Buffer.from(doc.data as string, 'base64') } : null;
 }

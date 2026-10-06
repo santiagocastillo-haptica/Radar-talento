@@ -25,6 +25,8 @@ export interface SeedQuestion {
   label?: string;
   prompt: string;
   wordLimit?: number;
+  /** Permite adjuntar una imagen opcional a la respuesta. */
+  allowImage?: boolean;
   options?: SeedOption[]; // en el orden original (A, B, C, D) — se baraja por candidato
   correctIndex?: number; // SOLO servidor
   skill?: string; // SOLO servidor

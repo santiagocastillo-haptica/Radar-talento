@@ -43,6 +43,7 @@ Ver [`.env.example`](.env.example). Las obligatorias en producción: `FIREBASE_S
 | `invitations/{id}` | Datos del candidato, `tokenHash`, `startedAt`/`deadlineAt`, partes enviadas, orden barajado de opciones, evaluación y notas. |
 | `invitations/{id}/answers/{qid}` | Respuesta actual de cada pregunta. |
 | `invitations/{id}/signals/*` | Señales (pegados, salidas de pestaña, tamaño de texto por autoguardado). |
+| `invitations/{id}/attachments/{pregunta}` | Imagen adjunta opcional (base64). |
 | `auditLog/*` | Registro de auditoría solo-añadir. |
 | `adminUsers/*` | Personas con acceso al panel (hash de contraseña, estado, versión de sesión). |
 | `rateLimits/*` | Intentos fallidos (token de candidato por IP; inicio de sesión del panel por IP y correo). |
@@ -72,6 +73,23 @@ No se necesitan índices compuestos (`firestore.indexes.json` está vacío).
 - **Acceso al panel:** correo + contraseña propios guardados en Firestore (`adminUsers`), sin Google ni Microsoft. Contraseñas con scrypt y sal por usuario (mínimo 12 caracteres); las temporales (alta o restablecimiento) obligan a cambiarlas al primer ingreso; bloqueo por intentos fallidos **apagado por defecto** (se activa con `LOGIN_MAX_FAILS_PER_EMAIL` / `LOGIN_MAX_FAILS_PER_IP`; bloquea 15 min); cambiar o restablecer la contraseña y desactivar la cuenta cierran las sesiones abiertas (sesión de 8 h en cookie firmada, `HttpOnly`); no se puede desactivar al último administrador activo; todas las altas, restablecimientos y desactivaciones quedan en `auditLog` (sin contraseñas).
 - **Rúbrica y preguntas de entrevista** viven en `src/content/rubric.ts` (referencia del panel); el contenido de la prueba, en `src/content/variants.ts` y se carga con `npm run seed`. Para añadir una variante de un rol, agrega otro objeto con distinto `slug`. **No edites una variante que ya se aplicó**: crea una nueva.
 - Zona horaria del panel: America/Bogota.
+
+## Contenido de la prueba: versión ajustada (v2)
+
+El contenido sale del documento "Prueba de selección async — Service Designer y Legal Service Designer" y vive en `src/content/variants.ts`. Cada versión usa un `slug` nuevo (`…-v2`): al correr `npm run seed`, las variantes que ya no están en el contenido vigente quedan **retiradas** (`active: false`), así que las invitaciones nuevas reciben solo la versión vigente y las ya creadas siguen con la suya.
+
+**Imágenes adjuntas opcionales** ("Opcional: adjuntar imagen si lo consideras necesario"): en 1A (todas las preguntas), 1B (campo 4 de Service Designer) y Parte 3 (ambos campos). Una imagen por pregunta, máx. 8 por intento. El navegador la reduce (JPEG, lado mayor ≤ 1600 px); el servidor exige ≤ 600 KB, verifica el tipo por los bytes (JPG/PNG/WebP; se rechaza SVG y todo lo demás) y respeta el reloj. Se guarda en `invitations/{id}/attachments/{pregunta}` (base64) y solo la ve el equipo con sesión. Eliminar una invitación borra también sus imágenes.
+
+### Diferencias del documento que se resolvieron así (confirmar)
+
+1. **Claves de los ítems 9 y 12.** El texto de esos ítems cambió, pero la tabla de claves conserva las letras de la versión anterior. Se tomó la respuesta *conceptualmente* correcta: ítem 9 → "versión mínima de (B)…" (opción B); ítem 12 Service Designer → piloto "Mago de oz" (opción B); ítem 12 Legal → "explicar con sus propias palabras…" (opción C).
+2. **Preguntas 1A de Legal Service Designer.** El documento dice "las mismas tres que Service Designer" pero la descripción entre paréntesis corresponde a las anteriores. Se usaron las tres nuevas (Hipótesis, Investigación, Resultados) con "cooperativa" en lugar de "Aseguradora", porque se eliminaron las restricciones del caso en que se apoyaban las preguntas anteriores.
+3. **Tiempo sugerido de 1A:** 30 min en Service Designer y 25 en Legal (como indican sus secciones; la tabla general dice 30).
+4. **Marcas "REVISAR"** de los ítems 2 y 3 no se muestran al candidato.
+5. **Texto de reglas:** se mantiene el texto ajustado por Háptica (se puede usar IA); el documento aún trae el anterior ("sin ayuda de IA").
+6. **Parte 3:** la pregunta "¿Qué salió mal…?" ya no existe; la rúbrica conserva el indicador "Error o límite".
+7. **Guía del evaluador (LSD):** menciona el dato de 9 segundos, que ya no aparece en el caso del candidato.
+8. En el documento la suma de tiempos sugeridos (95 min con el margen) supera el reloj de 90: se mantiene el reloj único de 90.
 
 ## Pendientes antes de usar con candidatos reales
 

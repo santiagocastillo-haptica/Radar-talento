@@ -41,7 +41,7 @@ function errorResponse(e: unknown): NextResponse {
 }
 
 /** Rutas del candidato: el token viaja en el encabezado X-Attempt-Token (no en la URL, para que no quede en logs). */
-export async function candidateRoute(req: Request, fn: (db: Store, token: string) => Promise<unknown>): Promise<NextResponse> {
+export async function candidateRoute(req: Request, fn: (db: Store, token: string) => Promise<unknown>): Promise<Response> {
   try {
     const db = await getStore();
     const ip = clientIp(req);
@@ -51,7 +51,8 @@ export async function candidateRoute(req: Request, fn: (db: Store, token: string
     }
     const token = req.headers.get('x-attempt-token') ?? '';
     try {
-      return NextResponse.json(await fn(db, token));
+      const out = await fn(db, token);
+      return out instanceof Response ? out : NextResponse.json(out);
     } catch (e) {
       if (e instanceof AppError && e.code === 'invalid_token') await recordRateEvent(db, rlKey);
       throw e;

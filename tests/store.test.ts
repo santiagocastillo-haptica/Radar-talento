@@ -101,7 +101,7 @@ describe('compatibilidad con Firestore', () => {
     const p = await viewPart(db, token, at(T0, min(1)));
     const table = p.caseContext!.find((b) => b.type === 'table');
     expect(table && table.type === 'table' && table.rows[0]).toEqual(['Recibieron el recordatorio', '40.000', '100%', '100%']);
-    const stored = (await db.get('variants/sd-renovacion-polizas'))!;
+    const stored = (await db.get('variants/sd-renovacion-polizas-v2'))!;
     const raw = (stored.caseContext as { type: string; rows?: unknown[] }[]).find((b) => b.type === 'table')!;
     expect(raw.rows![0]).toHaveProperty('cells');
   });

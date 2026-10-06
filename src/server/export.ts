@@ -98,13 +98,14 @@ export async function buildExport(db: Store, now = new Date()): Promise<{ candid
           q.wordLimit ?? p.groupWordLimit ?? '',
           sig?.pasteCount ?? 0,
           sig?.pasteChars ?? 0,
+          q.image ? 'Sí' : '',
         ]);
       }
     }
   }
   const respuestas: Sheet = {
     name: 'Respuestas abiertas',
-    headers: ['Nombre', 'Correo', 'Rol', 'Parte', 'N.º', 'Campo', 'Enunciado', 'Respuesta', 'Palabras', 'Límite de palabras', 'Pegados en el campo', 'Caracteres pegados'],
+    headers: ['Nombre', 'Correo', 'Rol', 'Parte', 'N.º', 'Campo', 'Enunciado', 'Respuesta', 'Palabras', 'Límite de palabras', 'Pegados en el campo', 'Caracteres pegados', 'Imagen adjunta'],
     rows,
   };
   return { candidatos, respuestas };

@@ -131,14 +131,14 @@ describe('secuencia fija y sin retroceso', () => {
 
     const raw = JSON.stringify(await getAttemptView(db, token, at(T0, min(1))));
     expect(raw).not.toContain('gerente comercial te escribe');
-    expect(raw).not.toContain('perdió 20% de su capacidad');
+    expect(raw).not.toContain('duración de 2 semanas');
     expect(raw).not.toContain('Ajuste ante el giro');
     expect(raw).not.toContain('¿Qué cambia en tu decisión');
 
     await submitPart(db, token, '1A', fillAnswers(p1a), undefined, at(T0, min(20)));
     const p1b = await viewPart(db, token, at(T0, min(21)));
     expect(p1b.id).toBe('1B');
-    expect(JSON.stringify(p1b.twist)).toContain('perdió 20% de su capacidad');
+    expect(JSON.stringify(p1b.twist)).toContain('duración de 2 semanas');
     expect(p1b.questions.map((q) => q.number)).toEqual([4, 5]);
   });
 
@@ -187,26 +187,26 @@ describe('límites de palabras en servidor', () => {
   it('rechaza el autoguardado por encima del límite de la pregunta y acepta el límite exacto', async () => {
     const { token } = await startedAttempt(db);
     const p = await viewPart(db, token, at(T0, min(1)));
-    const q = p.questions[0]; // Diagnóstico, 120 palabras
-    expect(q.wordLimit).toBe(120);
-    const ok = await saveAnswers(db, token, '1A', [{ questionId: q.id, text: words(120) }], undefined, at(T0, min(2)));
+    const q = p.questions[0]; // Hipótesis, 200 palabras
+    expect(q.wordLimit).toBe(200);
+    const ok = await saveAnswers(db, token, '1A', [{ questionId: q.id, text: words(200) }], undefined, at(T0, min(2)));
     expect(ok.rejected).toEqual([]);
-    const over = await saveAnswers(db, token, '1A', [{ questionId: q.id, text: words(121) }], undefined, at(T0, min(3)));
+    const over = await saveAnswers(db, token, '1A', [{ questionId: q.id, text: words(201) }], undefined, at(T0, min(3)));
     expect(over.rejected).toEqual([{ questionId: q.id, code: 'over_limit' }]);
     const back = await viewPart(db, token, at(T0, min(4)));
-    expect(back.saved[q.id].text).toBe(words(120)); // se conserva el último texto válido
+    expect(back.saved[q.id].text).toBe(words(200)); // se conserva el último texto válido
   });
 
   it('el envío falla si algún campo excede el límite', async () => {
     const { token } = await startedAttempt(db);
     const p = await viewPart(db, token, at(T0, min(1)));
     const answers = fillAnswers(p);
-    answers[1] = { questionId: p.questions[1].id, text: words(101) }; // Hipótesis, 100
+    answers[2] = { questionId: p.questions[2].id, text: words(101) }; // Resultados, 100
     expect(await code(submitPart(db, token, '1A', answers, undefined, at(T0, min(2))))).toBe('over_limit');
     expect((await viewPart(db, token, at(T0, min(3)))).id).toBe('1A'); // no quedó enviada
   });
 
-  it('Parte 3: límite de 300 palabras compartido entre los tres campos', async () => {
+  it('Parte 3: límite de 300 palabras compartido entre los dos campos', async () => {
     const { token } = await startedAttempt(db);
     let t = 1;
     for (const part of ['1A', '1B', '2'] as const) {
@@ -216,19 +216,18 @@ describe('límites de palabras en servidor', () => {
     }
     const p3 = await viewPart(db, token, at(T0, min(t)));
     expect(p3.groupWordLimit).toBe(300);
-    const [a, b, c] = p3.questions;
-    const r1 = await saveAnswers(db, token, '3', [{ questionId: a.id, text: words(150) }, { questionId: b.id, text: words(100) }], undefined, at(T0, min(t + 1)));
+    expect(p3.questions).toHaveLength(2);
+    const [a, b] = p3.questions;
+    const r1 = await saveAnswers(db, token, '3', [{ questionId: a.id, text: words(200) }], undefined, at(T0, min(t + 1)));
     expect(r1.rejected).toEqual([]);
-    // 150 + 100 + 51 = 301 → rechazado
-    const r2 = await saveAnswers(db, token, '3', [{ questionId: c.id, text: words(51) }], undefined, at(T0, min(t + 2)));
-    expect(r2.rejected).toEqual([{ questionId: c.id, code: 'over_group_limit' }]);
-    const r3 = await saveAnswers(db, token, '3', [{ questionId: c.id, text: words(50) }], undefined, at(T0, min(t + 3)));
+    // 200 + 101 = 301 → rechazado
+    const r2 = await saveAnswers(db, token, '3', [{ questionId: b.id, text: words(101) }], undefined, at(T0, min(t + 2)));
+    expect(r2.rejected).toEqual([{ questionId: b.id, code: 'over_group_limit' }]);
+    const r3 = await saveAnswers(db, token, '3', [{ questionId: b.id, text: words(100) }], undefined, at(T0, min(t + 3)));
     expect(r3.rejected).toEqual([]);
     // El envío con 301 palabras repartidas también se rechaza.
     expect(
-      await code(
-        submitPart(db, token, '3', [{ questionId: a.id, text: words(151) }, { questionId: b.id, text: words(100) }, { questionId: c.id, text: words(50) }], undefined, at(T0, min(t + 4))),
-      ),
+      await code(submitPart(db, token, '3', [{ questionId: a.id, text: words(201) }, { questionId: b.id, text: words(100) }], undefined, at(T0, min(t + 4)))),
     ).toBe('over_limit');
   });
 
@@ -241,8 +240,8 @@ describe('límites de palabras en servidor', () => {
       t += 3;
     }
     const p3 = await viewPart(db, token, at(T0, min(t)));
-    expect(p3.questions[2].prompt).toContain('como Legal Service Designer');
-    expect(p3.questions[2].prompt).not.toContain('{{rol}}');
+    expect(p3.questions[1].prompt).toContain('como Legal Service Designer');
+    expect(p3.questions[1].prompt).not.toContain('{{rol}}');
   });
 });
 

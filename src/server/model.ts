@@ -11,6 +11,8 @@ export interface VariantQuestion {
   label: string | null;
   prompt: string;
   wordLimit: number | null;
+  /** Se puede adjuntar una imagen opcional a la respuesta. */
+  allowImage: boolean;
   /** Opciones en el orden original del seed (sin barajar). Sin marca de correcta: la clave vive en variantKeys. */
   options?: { id: string; text: string }[];
 }
@@ -63,6 +65,8 @@ export interface InvRow {
   submitted: Partial<Record<PartId, Date>>;
   optionOrders: Record<string, string[]>;
   signalCount: number;
+  /** Metadatos de imágenes adjuntas (los bytes viven en la subcolección attachments). */
+  attachments: Record<string, { mime: string; size: number; updatedAt: string } | null>;
   evaluations: Record<string, { status: string; by: string; at: string } | null>;
   notes: Record<string, { note: string; by: string; at: string } | null>;
 }
@@ -93,6 +97,7 @@ export function toInv(id: string, x: Data): InvRow {
     submitted,
     optionOrders: x.optionOrders ?? {},
     signalCount: x.signalCount ?? 0,
+    attachments: x.attachments ?? {},
     evaluations: x.evaluations ?? {},
     notes: x.notes ?? {},
   };

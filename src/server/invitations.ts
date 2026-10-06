@@ -173,6 +173,7 @@ export async function deleteInvitation(
   }
   const answers = await store.query(`${invPath(invitationId)}/answers`);
   const signals = await store.query(`${invPath(invitationId)}/signals`);
+  const attachments = await store.query(`${invPath(invitationId)}/attachments`);
   await audit(
     store,
     {
@@ -180,12 +181,12 @@ export async function deleteInvitation(
       action: 'invitation_deleted',
       invitationId,
       reason: why,
-      details: { role: inv.role, status: computeStatus(inv, now), hadStarted: !!inv.startedAt, answers: answers.length, signals: signals.length },
+      details: { role: inv.role, status: computeStatus(inv, now), hadStarted: !!inv.startedAt, answers: answers.length, signals: signals.length, images: attachments.length },
     },
     now,
   );
   // Primero los hijos y al final el documento principal: si algo se interrumpe, se puede repetir la eliminación.
-  const paths = [...answers.map((a) => `${invPath(invitationId)}/answers/${a.id}`), ...signals.map((s) => `${invPath(invitationId)}/signals/${s.id}`)];
+  const paths = [...answers.map((a) => `${invPath(invitationId)}/answers/${a.id}`), ...signals.map((s) => `${invPath(invitationId)}/signals/${s.id}`), ...attachments.map((x) => `${invPath(invitationId)}/attachments/${x.id}`)];
   for (let i = 0; i < paths.length; i += 25) await Promise.all(paths.slice(i, i + 25).map((p) => store.delete(p)));
   await store.delete(invPath(invitationId));
   return { deletedAnswers: answers.length, deletedSignals: signals.length };

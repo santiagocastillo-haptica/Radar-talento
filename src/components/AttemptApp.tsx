@@ -55,6 +55,16 @@ export function AttemptApp() {
     }
   }, []);
 
+  /** Descarga un binario (la imagen propia) con el token en el encabezado. */
+  const callBlob = useCallback(async (path: string): Promise<Blob | null> => {
+    try {
+      const res = await fetch(path, { headers: { 'X-Attempt-Token': tokenRef.current ?? '' }, cache: 'no-store' });
+      return res.ok ? await res.blob() : null;
+    } catch {
+      return null;
+    }
+  }, []);
+
   const load = useCallback(async () => {
     const res = await call<AttemptView>('GET', '/api/attempt');
     if (res.ok) {
@@ -111,7 +121,7 @@ export function AttemptApp() {
     case 'creada':
       return <Welcome view={view} call={call} onView={setView} />;
     case 'en_curso':
-      return <Running key={view.part.id} view={view} call={call} syncRef={syncRef} onView={setView} />;
+      return <Running key={view.part.id} view={view} call={call} callBlob={callBlob} syncRef={syncRef} onView={setView} />;
   }
 }
 
