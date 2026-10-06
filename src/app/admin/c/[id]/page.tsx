@@ -167,7 +167,7 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
         {(['1A', '1B'] as const).map((pid) => (
           <PartSection key={pid} p={part(pid)} d={d}>
             {part(pid).questions.map((q) => (
-              <OpenPair key={q.id} invitationId={inv.id} q={q} partId={pid} signals={s} criterion={CRITERIA_BY_Q[`${pid}:${q.number}`]} />
+              <OpenPair key={q.id} invitationId={inv.id} q={q} partId={pid} signals={s} criterion={d.variant.slug.startsWith('sd-') ? CRITERIA_BY_Q[`${pid}:${q.number}`] : undefined} />
             ))}
             {pid === '1A' ? (
               <div className="card subtle">

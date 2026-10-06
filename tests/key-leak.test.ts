@@ -97,7 +97,8 @@ describe('contenido cargado por el seed', () => {
     const expected: Record<string, string> = {
       // Se retiraron los ítems marcados REVISAR (antes 2 y 3); ítems 9 y 12 del documento reescritos (ver README).
       'sd-renovacion-polizas-v3': 'ABDBCABBAB',
-      'lsd-contrato-credito-v3': 'ABDBCABBCC',
+      // Legal: 10 ítems propios (el documento no trae su tabla de claves; se definió por el sentido de cada ítem).
+      'lsd-contrato-credito-v4': 'BACDABDBDC',
     };
     for (const [slug, letters] of Object.entries(expected)) {
       const variant = (await db.get(`variants/${slug}`))!;
@@ -114,8 +115,8 @@ describe('contenido cargado por el seed', () => {
     const keys = (await db.get('variantKeys/sd-renovacion-polizas-v3'))!.keys as Record<string, { skill: string }>;
     const skills = Array.from({ length: 10 }, (_, i) => keys[`2-${i + 1}`].skill);
     expect(skills).toEqual(['01', '03', '02', '05', '06', '08', '09', '04', '02', '03']);
-    const lsd = (await db.get('variantKeys/lsd-contrato-credito-v3'))!.keys as Record<string, { skill: string }>;
-    expect([lsd['2-9'].skill, lsd['2-10'].skill]).toEqual(['03', '01']);
+    const lsd = (await db.get('variantKeys/lsd-contrato-credito-v4'))!.keys as Record<string, { skill: string }>;
+    expect(Array.from({ length: 10 }, (_, i) => lsd[`2-${i + 1}`].skill)).toEqual(['06', '01', '03', '06', '01', '03', '04', '04', '09', '01']);
   });
 
   it('el seed es idempotente (mismos ids de opción)', async () => {

@@ -167,12 +167,40 @@ const SD_ITEMS: SeedQuestion[] = [
   },
 ];
 
-const LSD_ITEMS: SeedQuestion[] = [
+/** Legal Service Designer: 10 ítems propios (reemplazan los comunes + 11 y 12). La clave y la habilidad de cada uno
+ *  las definió el equipo de contenido por el sentido de cada ítem: confirmar en README. */
+const LSD_OWN_ITEMS: SeedQuestion[] = [
   {
-    number: 11,
+    number: 1,
+    kind: 'mc',
+    prompt: 'Reescribes en lenguaje simple una cláusula de intereses de mora y notas que el texto original no dice desde qué día se cuentan los intereses. ¿Qué haces?',
+    options: [
+      { text: 'Escribes "desde el día siguiente al vencimiento", que es lo que normalmente se entiende, para que quede claro.' },
+      { text: 'Dejas la duda visible, se la reportas a Jurídico y no la resuelves por tu cuenta en la versión simple.' },
+      { text: 'Omites ese punto en la versión simple, porque no aparece en el original.' },
+      { text: 'Preguntas al área comercial cómo se aplica en la práctica y lo escribes así.' },
+    ],
+    correctIndex: 1,
+    skill: '06',
+  },
+  {
+    number: 2,
     kind: 'mc',
     prompt:
-      'Jurídico teme que un resumen en lenguaje simple de una cláusula de pago anticipado cree obligaciones nuevas. ¿Qué haces?',
+      'Entrevistaste a 8 usuarios sobre la cláusula de pago anticipado y 6 entendieron mal cuánto les cobrarían. El cliente decide mañana si agrega un aviso en pantalla, que cuesta poco y se puede retirar en una semana. ¿Qué recomiendas?',
+    options: [
+      { text: 'Agregar el aviso y medir después cuántos lo interpretan bien, dejando definido qué resultado indicaría que no funcionó; 6 de 8 es una señal, no una cifra poblacional.' },
+      { text: 'Esperar a una encuesta amplia antes de agregar nada.' },
+      { text: 'Agregar el aviso y reportar que el 75% de los usuarios malinterpreta la cláusula.' },
+      { text: 'No agregar nada: 8 entrevistas no bastan para decidir.' },
+    ],
+    correctIndex: 0,
+    skill: '01',
+  },
+  {
+    number: 3,
+    kind: 'mc',
+    prompt: 'Jurídico teme que un resumen en lenguaje simple de una cláusula de pago anticipado cree obligaciones nuevas. ¿Qué haces?',
     options: [
       { text: 'Reemplazas la cláusula por el resumen para que el usuario solo lea lo simple.' },
       { text: 'Omites el resumen para no arriesgar nada jurídicamente.' },
@@ -183,7 +211,87 @@ const LSD_ITEMS: SeedQuestion[] = [
     skill: '03',
   },
   {
-    number: 12,
+    number: 4,
+    kind: 'mc',
+    prompt:
+      'Jurídico rechaza tu propuesta de reordenar el contrato para poner primero las cláusulas más reclamadas, porque "el orden es el que aprobó el regulador". No puedes verificarlo hoy. ¿Qué haces?',
+    options: [
+      { text: 'Insistes con la evidencia de las quejas: el orden afecta a los usuarios.' },
+      { text: 'Aceptas y descartas cualquier cambio de presentación.' },
+      { text: 'Escalas a la gerencia para que decida por encima de Jurídico.' },
+      { text: 'Preguntas qué fue exactamente lo aprobado (el orden o solo el contenido) y propones alternativas que no alteren el orden, como una capa de lectura previa o resaltados, para validarlas con Jurídico.' },
+    ],
+    correctIndex: 3,
+    skill: '06',
+  },
+  {
+    number: 5,
+    kind: 'mc',
+    prompt:
+      'Un usuario dice: "pensé que si pagaba antes me cobraban menos intereses". La cláusula dice que los pagos parciales se aplican primero a intereses, comisiones y gastos. ¿Qué implica para tu explicación?',
+    options: [
+      { text: 'Que debe decir de forma explícita en qué orden se aplica el dinero, con un ejemplo, porque contradice la expectativa que el propio usuario expresó.' },
+      { text: 'Que basta con decir "puedes pagar antes de tiempo".' },
+      { text: 'Que el orden de aplicación es un detalle técnico que va solo en el texto completo.' },
+      { text: 'Que hay que pedirle a Jurídico que cambie el orden de aplicación de los pagos.' },
+    ],
+    correctIndex: 0,
+    skill: '01',
+  },
+  {
+    number: 6,
+    kind: 'mc',
+    prompt: 'Tu equipo propone reemplazar "sin perjuicio de los intereses causados" por "además de los intereses" en la versión simple. ¿Cómo lo evalúas?',
+    options: [
+      { text: 'Lo aceptas: en lenguaje cotidiano son sinónimos.' },
+      { text: 'Lo marcas como posible cambio de sentido y lo consultas con Jurídico: las dos expresiones no necesariamente significan lo mismo en un contrato.' },
+      { text: 'Lo aceptas si los usuarios lo entienden mejor en la prueba de comprensión.' },
+      { text: 'Lo rechazas: nunca se debe cambiar ninguna palabra de un contrato.' },
+    ],
+    correctIndex: 1,
+    skill: '03',
+  },
+  {
+    number: 7,
+    kind: 'mc',
+    prompt: 'Usas IA para simplificar 6 cláusulas y el resultado se lee claro. ¿Qué haces antes de llevarlo a Jurídico?',
+    options: [
+      { text: 'Se lo envías indicando que lo hizo una IA para que ellos lo revisen.' },
+      { text: 'Le pides a la misma IA que verifique que no cambió el sentido.' },
+      { text: 'Lo lees tú y, si suena bien, lo envías.' },
+      { text: 'Contrastas cada versión con su cláusula, línea por línea (cifras, plazos, condiciones y excepciones), marcas lo que la IA omitió, añadió o interpretó, y envías a Jurídico solo lo que ya pasó tu revisión, con esas marcas.' },
+    ],
+    correctIndex: 3,
+    skill: '04',
+  },
+  {
+    number: 8,
+    kind: 'mc',
+    prompt: 'Quieres probar tu reescritura pegando en una herramienta de IA un contrato real de un cliente, con nombres y montos de personas. ¿Qué haces?',
+    options: [
+      { text: 'Lo pegas: la herramienta de la empresa se ve segura.' },
+      { text: 'No pegas datos reales: usas una versión anonimizada o un contrato modelo, y confirmas con Jurídico y con el cliente qué herramientas y datos están permitidos.' },
+      { text: 'Lo pegas en una cuenta personal para no comprometer la de la empresa.' },
+      { text: 'Quitas solo los nombres y pegas el resto.' },
+    ],
+    correctIndex: 1,
+    skill: '04',
+  },
+  {
+    number: 9,
+    kind: 'mc',
+    prompt: 'Tienes 30 minutos con la abogada de Jurídico para avanzar la revisión de tu reescritura de una cláusula. ¿Cómo los usas?',
+    options: [
+      { text: 'Le envías el borrador completo y le pides que lo revise y te lo devuelva.' },
+      { text: 'Le explicas primero el contexto completo del proyecto.' },
+      { text: 'Le pides que reescriba ella la cláusula en lenguaje simple.' },
+      { text: 'Llevas el borrador con las dudas ya marcadas y tres preguntas concretas que solo ella puede responder, y sales con decisiones o con los siguientes pasos acordados.' },
+    ],
+    correctIndex: 3,
+    skill: '09',
+  },
+  {
+    number: 10,
     kind: 'mc',
     prompt: '¿Qué evidencia demuestra con mayor certeza que un usuario comprendió las consecuencias de una cláusula legal compleja?',
     options: [
@@ -253,21 +361,21 @@ const Q_3: SeedQuestion[] = [
 
 function buildParts(opts: {
   minutes1A: number;
+  minutes1B: number;
   q1a: SeedQuestion[];
-  q1b4: SeedQuestion;
-  q1b5: SeedQuestion;
-  roleItems: SeedQuestion[];
+  q1b: SeedQuestion[];
+  items: SeedQuestion[];
 }): SeedPart[] {
   return [
     { part: '1A', title: 'Parte 1A', suggestedMinutes: opts.minutes1A, questions: opts.q1a },
-    { part: '1B', title: 'Parte 1B', suggestedMinutes: SUGGESTED_MINUTES['1B'], questions: [opts.q1b4, opts.q1b5] },
+    { part: '1B', title: 'Parte 1B', suggestedMinutes: opts.minutes1B, questions: opts.q1b },
     {
       part: '2',
       title: 'Parte 2: selección múltiple',
       intro: [{ type: 'p', text: 'Elige una respuesta por ítem.' }],
       suggestedMinutes: SUGGESTED_MINUTES['2'],
       // Se numera de corrido (1…n) aunque se retiren ítems del banco.
-      questions: [...COMMON_ITEMS, ...opts.roleItems].map((q, i) => ({ ...q, number: i + 1 })),
+      questions: opts.items.map((q, i) => ({ ...q, number: i + 1 })),
     },
     {
       part: '3',
@@ -329,23 +437,29 @@ const SD_VARIANT: SeedVariant = {
   ],
   parts: buildParts({
     minutes1A: 30,
+    minutes1B: SUGGESTED_MINUTES['1B'],
     q1a: Q_1A('para la Aseguradora'),
-    q1b4: Q_1B_ADJUST(true),
-    roleItems: SD_ITEMS,
-    q1b5: {
-      number: 5,
-      kind: 'open',
-      label: 'Mensaje a la gerente comercial',
-      wordLimit: 100,
-      prompt: 'Escribe el mensaje que le enviarías a la gerente comercial (máx. 100 palabras, tono de mensaje real).',
-    },
+    items: [...COMMON_ITEMS, ...SD_ITEMS],
+    q1b: [
+      Q_1B_ADJUST(true),
+      {
+        number: 5,
+        kind: 'open',
+        label: 'Mensaje a la gerente comercial',
+        wordLimit: 100,
+        prompt: 'Escribe el mensaje que le enviarías a la gerente comercial (máx. 100 palabras, tono de mensaje real).',
+      },
+    ],
   }),
 };
 
 // ───────────────────────── Variante Legal Service Designer ─────────────────────────
 
+const LSD_CLAUSE =
+  'CLÁUSULA NOVENA. PAGO ANTICIPADO. EL DEUDOR podrá efectuar pagos anticipados, totales o parciales, previo aviso escrito a LA COOPERATIVA con una antelación no inferior a cinco (5) días. Cuando el pago anticipado, individual o acumulado en un periodo de doce (12) meses, supere el veinte por ciento (20%) del saldo de capital, LA COOPERATIVA cobrará una compensación equivalente al dos por ciento (2%) del valor prepagado, sin perjuicio de los intereses causados a la fecha del pago. Los pagos parciales se aplicarán, en primer lugar, a intereses, comisiones y gastos, y el excedente a capital, sin que ello implique reducción del valor de la cuota, salvo que EL DEUDOR solicite por escrito la reliquidación del plan de pagos. La compensación aquí prevista no se aplicará a pagos efectuados con recursos provenientes de refinanciación con la misma COOPERATIVA.';
+
 const LSD_VARIANT: SeedVariant = {
-  slug: 'lsd-contrato-credito-v3',
+  slug: 'lsd-contrato-credito-v4',
   role: 'legal_service_designer',
   name: 'Legal Service Designer: Contrato de crédito digital',
   caseTitle: 'Contrato de crédito digital',
@@ -369,24 +483,71 @@ const LSD_VARIANT: SeedVariant = {
     { type: 'quote', text: 'Pensé que si pagaba antes me cobraban menos intereses, no que me iban a cobrar una penalidad.' },
     { type: 'quote', text: 'No sabía que reportaban a centrales si me atrasaba un día.' },
   ],
+  // Se muestra SOLO en 1B: el giro y el documento con el que se trabaja.
   twist: [
     {
       type: 'p',
       text: 'Jurídico informa que se requiere una adición al proyecto añadiendo como entregable adicional, un contrato que aplique en términos de inclusión al segmento baby boomers en el que se incluya un "audio contrato".',
     },
+    { type: 'h', text: 'Documento para 1B: cláusula novena del contrato' },
+    { type: 'p', text: 'Texto ficticio, escrito solo para esta prueba: no es un modelo contractual ni refleja ninguna norma real.' },
+    { type: 'quote', text: LSD_CLAUSE },
   ],
   parts: buildParts({
     minutes1A: 25,
-    q1a: Q_1A('para la cooperativa'),
-    q1b4: Q_1B_ADJUST(false),
-    roleItems: LSD_ITEMS,
-    q1b5: {
-      number: 5,
-      kind: 'open',
-      label: 'Mensaje a la abogada de Jurídico',
-      wordLimit: 80,
-      prompt: 'Escribe el mensaje que le enviarías a la abogada de Jurídico para acordar cómo avanzar (máx. 80 palabras, tono de mensaje real).',
-    },
+    minutes1B: 30,
+    items: LSD_OWN_ITEMS,
+    q1a: [
+      {
+        number: 1,
+        kind: 'open',
+        label: 'Hipótesis',
+        wordLimit: 150,
+        prompt:
+          'Hipótesis (máx. 150 palabras): ¿qué crees que explica el aumento de quejas? Incluye al menos una hipótesis sobre el texto del contrato mismo, no solo sobre la pantalla o el flujo.',
+      },
+      {
+        number: 2,
+        kind: 'open',
+        label: 'Investigación',
+        wordLimit: 150,
+        prompt:
+          'Investigación (máx. 150 palabras): tienes 3 semanas y acceso a la abogada de Jurídico. ¿Cómo verificarías si los usuarios entienden las 3 cláusulas que concentran más quejas? ¿Con quién hablarías y qué actividades harías?',
+      },
+      {
+        number: 3,
+        kind: 'open',
+        label: 'Jurídico',
+        wordLimit: 100,
+        prompt: 'Jurídico (máx. 100 palabras): antes de cambiar nada, ¿qué 3 preguntas le harías a Jurídico y por qué cada respuesta cambia lo que puedes proponer?',
+      },
+    ],
+    q1b: [
+      {
+        number: 4,
+        kind: 'open',
+        label: 'Ambigüedades',
+        wordLimit: 100,
+        prompt:
+          'Ambigüedades (máx. 100 palabras): lee la cláusula novena. Señala hasta 3 puntos que podrían interpretarse de más de una manera o contradecir lo que el usuario cree, y qué le preguntarías a Jurídico en cada uno. No los resuelvas suponiendo una interpretación.',
+      },
+      {
+        number: 5,
+        kind: 'open',
+        label: 'Reescritura',
+        wordLimit: 150,
+        prompt:
+          'Reescritura (máx. 150 palabras): reescribe la cláusula en lenguaje claro para una persona sin formación jurídica. Conserva todas las cifras, plazos, condiciones y excepciones, no agregues obligaciones nuevas y piensa que también se leerá en voz alta en el "audio contrato".',
+      },
+      {
+        number: 6,
+        kind: 'open',
+        label: 'Nota para la abogada de Jurídico',
+        wordLimit: 100,
+        prompt:
+          'Nota para la abogada de Jurídico (máx. 100 palabras): ¿qué simplificaste y qué dejaste casi literal, y por qué? ¿Propondrías que tu versión reemplace el texto original o que se muestre junto a él? ¿Qué riesgo ves en cada opción?',
+      },
+    ],
   }),
 };
 

@@ -49,21 +49,53 @@ describe('contenido ajustado (documento de Háptica)', () => {
     ]);
   });
 
-  it('Legal Service Designer: sin el dato de 9 segundos ni restricciones, y con el giro del "audio contrato"', async () => {
+  it('Legal Service Designer: Parte 1 rehecha (hipótesis, investigación, Jurídico; cláusula novena en 1B)', async () => {
     const { token } = await startedAttempt(db, 'legal_service_designer');
     const p = await viewPart(db, token, at(T0, min(1)));
     const ctx = JSON.stringify(p.caseContext);
     expect(ctx).not.toContain('9 segundos');
-    expect(ctx).not.toContain('Restricciones');
+    expect(ctx).not.toContain('CLÁUSULA NOVENA'); // el documento de 1B no se adelanta
     expect(p.suggestedMinutes).toBe(25);
-    expect(p.questions[2].prompt).toContain('para la cooperativa');
+    expect(p.questions.map((q) => [q.label, q.wordLimit, q.allowImage])).toEqual([
+      ['Hipótesis', 150, false],
+      ['Investigación', 150, false],
+      ['Jurídico', 100, false],
+    ]);
+    const raw1A = JSON.stringify(await getAttemptView(db, token, at(T0, min(1))));
+    expect(raw1A).not.toContain('audio contrato');
+    expect(raw1A).not.toContain('Reescritura');
+
     await submitPart(db, token, '1A', fillAnswers(p), undefined, at(T0, min(5)));
     const p1b = await viewPart(db, token, at(T0, min(6)));
-    expect(JSON.stringify(p1b.twist)).toContain('audio contrato');
-    expect(p1b.questions.map((q) => [q.wordLimit, q.allowImage])).toEqual([
-      [200, false],
-      [80, false],
+    expect(p1b.suggestedMinutes).toBe(30);
+    const twist = JSON.stringify(p1b.twist);
+    expect(twist).toContain('audio contrato');
+    expect(twist).toContain('Texto ficticio, escrito solo para esta prueba');
+    expect(twist).toContain('CLÁUSULA NOVENA. PAGO ANTICIPADO.');
+    expect(twist).toContain('cinco (5) días');
+    expect(p1b.questions.map((q) => [q.number, q.label, q.wordLimit, q.allowImage])).toEqual([
+      [4, 'Ambigüedades', 100, false],
+      [5, 'Reescritura', 150, false],
+      [6, 'Nota para la abogada de Jurídico', 100, false],
     ]);
+  });
+
+  it('Legal Service Designer: Parte 2 con 10 ítems propios (no los comunes) y Parte 3 igual que Service Designer', async () => {
+    const { token } = await startedAttempt(db, 'legal_service_designer');
+    let t = 1;
+    for (const part of ['1A', '1B'] as const) {
+      const p = await viewPart(db, token, at(T0, min(t)));
+      await submitPart(db, token, part, fillAnswers(p), undefined, at(T0, min(t + 1)));
+      t += 3;
+    }
+    const p2 = await viewPart(db, token, at(T0, min(t)));
+    expect(p2.questions).toHaveLength(10);
+    expect(p2.questions[0].prompt).toContain('intereses de mora');
+    expect(p2.questions.some((q) => q.prompt.includes('Entrevistaste a 8 usuarios y 6 describieron'))).toBe(false); // ítem común del Service Designer
+    await submitPart(db, token, '2', fillAnswers(p2), undefined, at(T0, min(t + 1)));
+    const p3 = await viewPart(db, token, at(T0, min(t + 3)));
+    expect(p3.questions).toHaveLength(1);
+    expect(p3.questions[0].prompt).toContain('rol del diseñador como "autor"');
   });
 
   it('Parte 3: una sola pregunta abierta (la de la autoría), con imagen opcional', async () => {
@@ -153,7 +185,7 @@ describe('imagen adjunta opcional', () => {
     const p1a = await viewPart(db, token, at(T0, min(t)));
     await submitPart(db, token, '1A', fillAnswers(p1a), undefined, at(T0, min(t + 1)));
     const p1b = await viewPart(db, token, at(T0, min(t + 2)));
-    // En la variante LSD el campo 4 de 1B no admite imagen.
+    // En la variante LSD los campos de 1B no admiten imagen.
     expect(await code(setAttachment(db, token, '1B', p1b.questions[0].id, { base64: PNG }, at(T0, min(t + 3))))).toBe('no_image_allowed');
   });
 
