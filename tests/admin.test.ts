@@ -177,12 +177,12 @@ describe('calificación, evaluación y exportación', () => {
     const { id } = await completed();
     await saveEvaluation(db, id, '01', 'solida', 'admin@haptica.co');
     await saveEvaluation(db, id, '04', 'indicio', 'admin@haptica.co');
-    await saveEvaluation(db, id, 'p3_ejemplo', 'sin_evidencia', 'admin@haptica.co');
+    await saveEvaluation(db, id, 'p3_criterio', 'sin_evidencia', 'admin@haptica.co');
     await saveNote(db, id, '1A', 'Duda sobre el NPS: buena', 'admin@haptica.co');
     expect(await code(saveEvaluation(db, id, '07', 'solida', 'admin@haptica.co'))).toBe('bad_key');
     expect(await code(saveEvaluation(db, id, '01', 'excelente' as never, 'admin@haptica.co'))).toBe('bad_status');
     const d = await getCandidateDetail(db, id);
-    expect(d!.evaluations).toMatchObject({ '01': 'solida', '04': 'indicio', 'p3_ejemplo': 'sin_evidencia' });
+    expect(d!.evaluations).toMatchObject({ '01': 'solida', '04': 'indicio', 'p3_criterio': 'sin_evidencia' });
     expect(d!.notes['1A']).toBe('Duda sobre el NPS: buena');
     await saveEvaluation(db, id, '01', null, 'admin@haptica.co'); // limpiar
     expect((await getCandidateDetail(db, id))!.evaluations['01']).toBeUndefined();

@@ -128,33 +128,34 @@ export interface Part3Indicator {
 
 export const PART3_INDICATORS: Part3Indicator[] = [
   {
-    key: 'p3_ejemplo',
-    title: 'Ejemplo propio',
-    solida: 'Herramienta, tarea concreta y resultado.',
-    indicio: 'Herramienta y tarea sin resultado.',
-    sin: 'Solo ideas generales.',
-  },
-  {
-    key: 'p3_error',
-    title: 'Error o límite',
-    solida: 'Fallo específico y cómo lo corrigió.',
-    indicio: 'Riesgos genéricos.',
-    sin: 'Ninguno.',
-  },
-  {
-    key: 'p3_adopcion',
-    title: 'Nivel de adopción (04)',
-    solida: 'Uso integrado al flujo o rediseño de un proceso con ejemplo repetible.',
-    indicio: 'Uso ocasional.',
-    sin: 'Solo conoce las herramientas.',
-    note: 'No se penaliza a quien decidió no usar IA si explica su criterio con un caso concreto.',
+    key: 'p3_criterio',
+    title: 'Criterio de autoría (04)',
+    solida: 'Propone un criterio concreto para saber cuándo el entregable sigue siendo suyo: qué decide, verifica o corrige él.',
+    indicio: 'Reconoce que debe haber criterio propio, pero no dice cómo se reconoce.',
+    sin: 'Dice que la IA es solo una herramienta, o que reemplaza al diseñador, sin ningún criterio.',
   },
   {
     key: 'p3_postura',
-    title: 'Postura sobre su rol',
-    solida: 'Separa qué delega y qué no, con criterio.',
-    indicio: 'Afirma sin sustento.',
-    sin: 'Entusiasmo o rechazo total sin ejemplo.',
+    title: 'Postura sobre su rol como autor (04)',
+    solida: 'Postura clara y defendida, con matices: separa qué delega a la IA y qué retiene, y reconoce al menos un contraargumento.',
+    indicio: 'Postura clara, pero sin sustento o sin considerar otra mirada.',
+    sin: 'Entusiasmo o rechazo total de la IA, sin argumento.',
+    note: 'No se penaliza a quien no usa IA si explica su criterio con un caso concreto.',
+  },
+  {
+    key: 'p3_caso',
+    title: 'Sustento con un caso concreto',
+    solida: 'Apoya su tesis en un caso real o verosímil de diseño (herramienta, tarea y qué corrigió o decidió).',
+    indicio: 'Da un ejemplo genérico, sin tarea ni resultado.',
+    sin: 'Solo ideas generales.',
+  },
+  {
+    key: 'p3_escritura',
+    title: 'Argumentación escrita (06)',
+    solida: 'Tesis, argumento y conclusión claros, concisos y dentro del límite de palabras.',
+    indicio: 'Se entiende, pero es desordenada, repetitiva o se queda en descripciones.',
+    sin: 'Confusa, o una lista de frases hechas sin hilo argumental.',
+    note: 'Estructura impecable sin postura propia es una bandera de texto sin criterio.',
   },
 ];
 
