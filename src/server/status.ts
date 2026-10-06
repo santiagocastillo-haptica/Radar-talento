@@ -17,10 +17,24 @@ export function testClosed(now: Date): boolean {
   return !!c && now.getTime() > c.getTime();
 }
 
+/**
+ * Hasta cuándo sirve un enlace que aún no se inició. Si hay hora de cierre (TEST_CLOSES_AT), es ESA hora para todos
+ * (una sola fecha); si no, vale lo que se guardó al crearlo (creación + INVITE_VALID_HOURS).
+ */
+export function effectiveExpiry(inv: InvRow): Date {
+  return config().testClosesAt ?? inv.expiresAt;
+}
+
+/** Vigencia de un enlace nuevo: hasta el cierre de la prueba si existe; si no, INVITE_VALID_HOURS desde ahora. */
+export function newLinkExpiry(now: Date): Date {
+  const c = config().testClosesAt;
+  return c && c.getTime() > now.getTime() ? c : new Date(now.getTime() + config().inviteValidHours * 3600_000);
+}
+
 /** El estado SIEMPRE se calcula a partir de las marcas de tiempo del servidor; nunca de un timer. */
 export function computeStatus(inv: InvRow, now: Date): Status {
   if (!inv.startedAt || !inv.deadlineAt) {
-    return now.getTime() > inv.expiresAt.getTime() || testClosed(now) ? 'vencida' : 'creada';
+    return now.getTime() > effectiveExpiry(inv).getTime() || testClosed(now) ? 'vencida' : 'creada';
   }
   if (inv.finishedAt) return 'enviada';
   if (now.getTime() > inv.deadlineAt.getTime()) return 'expirada';

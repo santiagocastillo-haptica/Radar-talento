@@ -69,3 +69,47 @@ describe('cierre de la prueba (TEST_CLOSES_AT)', () => {
     expect((await getAttemptView(db, inv.token, at(CLOSE, min(5)))).status).toBe('creada');
   });
 });
+
+describe('una sola fecha para todos los enlaces sin iniciar', () => {
+  beforeEach(() => {
+    process.env.TEST_CLOSES_AT = '2026-10-08T13:00:00-05:00';
+  });
+  afterEach(() => {
+    delete process.env.TEST_CLOSES_AT;
+  });
+
+  it('con cierre definido, un enlace creado 3 días antes sigue valiendo (no vence a las 24 h) hasta la hora de cierre', async () => {
+    const created = at(CLOSE, -3 * 24 * 60 * min(1)); // martes
+    const inv = await invite(db, 'service_designer', created);
+    const stored = (await db.get(`invitations/${inv.id}`))!;
+    expect(stored.expiresAt).toBe(CLOSE.toISOString()); // se guarda el cierre, no creación + 24 h
+    expect(inv.expiresAt).toBe(CLOSE.toISOString());
+
+    const v = await getAttemptView(db, inv.token, at(created, 30 * 60 * min(1))); // 30 h después
+    expect(v.status).toBe('creada');
+    if (v.status === 'creada') expect(v.expiresAt).toBe(CLOSE.toISOString());
+    expect((await startAttempt(db, inv.token, true, at(CLOSE, -min(5)))).status).toBe('en_curso');
+  });
+
+  it('enlaces ya creados con 24 h también quedan válidos hasta el cierre', async () => {
+    delete process.env.TEST_CLOSES_AT;
+    const created = at(CLOSE, -2 * 24 * 60 * min(1));
+    const inv = await invite(db, 'service_designer', created); // sin cierre: vence a las 24 h
+    process.env.TEST_CLOSES_AT = '2026-10-08T13:00:00-05:00';
+    expect((await getAttemptView(db, inv.token, at(created, 30 * 60 * min(1)))).status).toBe('creada');
+    expect((await getAttemptView(db, inv.token, at(CLOSE, min(1)))).status).toBe('vencida');
+  });
+
+  it('regenerar un enlace también lo deja válido hasta el cierre', async () => {
+    const created = at(CLOSE, -2 * 24 * 60 * min(1));
+    const inv = await invite(db, 'service_designer', created);
+    const next = await regenerateLink(db, inv.id, 'admin@haptica.co', at(created, min(90)));
+    expect(next.expiresAt).toBe(CLOSE.toISOString());
+  });
+
+  it('sin cierre, el enlace sigue valiendo 24 h desde que se crea', async () => {
+    delete process.env.TEST_CLOSES_AT;
+    const inv = await invite(db, 'service_designer', at(CLOSE, -min(600)));
+    expect(new Date(inv.expiresAt).getTime() - (CLOSE.getTime() - min(600))).toBe(24 * 60 * min(1));
+  });
+});

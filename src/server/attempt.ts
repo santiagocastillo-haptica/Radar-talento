@@ -1,6 +1,6 @@
 import { config } from './config';
 import { hashToken, safeEqualHex, shuffle } from './tokens';
-import { canWrite, computeStatus, testClosed } from './status';
+import { canWrite, computeStatus, effectiveExpiry, testClosed } from './status';
 import { invPath, loadVariant, toInv, type InvRow, type VariantDoc } from './model';
 import { newId, type Data, type Reader, type Store, type Tx } from './store';
 import { countWords } from '@/lib/words';
@@ -98,7 +98,7 @@ async function buildView(store: Store, inv: InvRow, now: Date): Promise<AttemptV
       name: inv.name,
       role: inv.role,
       roleLabel: ROLE_LABEL[inv.role],
-      expiresAt: inv.expiresAt.toISOString(),
+      expiresAt: effectiveExpiry(inv).toISOString(),
       durationMinutes: cfg.durationMinutes,
       rulesText: RULES_TEXT,
       privacyUrl: cfg.privacyPolicyUrl,

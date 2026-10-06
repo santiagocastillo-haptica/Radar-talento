@@ -1,7 +1,7 @@
 import { config } from './config';
 import { generateToken, hashToken } from './tokens';
 import { AppError } from './attempt';
-import { computeStatus, testClosed } from './status';
+import { computeStatus, newLinkExpiry, testClosed } from './status';
 import { invPath, toInv } from './model';
 import { newId, type Store, type Writer } from './store';
 import type { Role } from '@/content/types';
@@ -28,7 +28,7 @@ export async function createInvitation(
   if (!variants.length) throw new AppError('no_variant', 409, 'No hay variantes activas para ese rol (¿se ejecutó el seed?)');
   const variant = variants[Math.floor(Math.random() * variants.length)];
   const token = generateToken();
-  const expires = new Date(now.getTime() + config().inviteValidHours * 3600_000);
+  const expires = newLinkExpiry(now);
   const id = newId();
   await store.set(invPath(id), {
     name: input.name.trim(),
@@ -65,7 +65,7 @@ export async function createInvitation(
  */
 export async function regenerateLink(store: Store, invitationId: string, actor: string, now = new Date()): Promise<NewInvitation> {
   const token = generateToken();
-  const expires = new Date(now.getTime() + config().inviteValidHours * 3600_000);
+  const expires = newLinkExpiry(now);
   await store.tx(async (t) => {
     const doc = await t.get(invPath(invitationId));
     if (!doc) throw new AppError('not_found', 404, 'Invitación no encontrada');

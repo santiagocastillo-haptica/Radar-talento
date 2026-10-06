@@ -76,8 +76,8 @@ export function CreateInvitation() {
       {created ? (
         <div className="card ok" style={{ marginTop: 16 }} role="status">
           <p>
-            <strong>Enlace para {created.name}.</strong> Cópialo y envíaselo ahora: <strong>por seguridad no se vuelve a mostrar</strong> (solo guardamos su huella). Si lo pierdes, usa “Regenerar enlace” en el detalle. Vence el{' '}
-            {new Date(created.expiresAt).toLocaleString('es-CO')} si la persona no inicia la prueba.
+            <strong>Enlace para {created.name}.</strong> Cópialo y envíaselo ahora: <strong>por seguridad no se vuelve a mostrar</strong> (solo guardamos su huella). Si lo pierdes, usa “Regenerar enlace” en el detalle. Sirve hasta el{' '}
+            {new Date(created.expiresAt).toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'full', timeStyle: 'short' })} (hora de Colombia) si la persona no inicia la prueba; una vez que presione Comenzar, tiene sus 90 minutos.
           </p>
           <p className="link-box">{created.link}</p>
           <CopyButton text={created.link} />

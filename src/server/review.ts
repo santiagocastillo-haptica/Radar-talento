@@ -1,6 +1,6 @@
 import { AppError, replaceRole } from './attempt';
 import { audit } from './invitations';
-import { computeStatus, remainingMs, type Status } from './status';
+import { computeStatus, effectiveExpiry, remainingMs, type Status } from './status';
 import { invPath, loadVariant, toInv, type VariantKeysDoc } from './model';
 import type { Store } from './store';
 import { summarizeSignals, type SignalRow, type SignalSummary } from '@/lib/signals';
@@ -46,7 +46,7 @@ export async function listInvitations(store: Store, now = new Date()): Promise<L
       variantName: names.get(r.variant) ?? r.variant,
       status,
       createdAt: r.createdAt.toISOString(),
-      expiresAt: r.expiresAt.toISOString(),
+      expiresAt: effectiveExpiry(r).toISOString(),
       openedAt: r.openedAt?.toISOString() ?? null,
       startedAt: r.startedAt?.toISOString() ?? null,
       deadlineAt: r.deadlineAt?.toISOString() ?? null,
@@ -224,7 +224,7 @@ export async function getCandidateDetail(store: Store, id: string, now = new Dat
       roleLabel,
       status,
       createdAt: inv.createdAt.toISOString(),
-      expiresAt: inv.expiresAt.toISOString(),
+      expiresAt: effectiveExpiry(inv).toISOString(),
       openedAt: inv.openedAt?.toISOString() ?? null,
       startedAt: inv.startedAt?.toISOString() ?? null,
       deadlineAt: inv.deadlineAt?.toISOString() ?? null,
