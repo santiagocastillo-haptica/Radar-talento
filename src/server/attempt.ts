@@ -1,6 +1,6 @@
 import { config } from './config';
 import { hashToken, safeEqualHex, shuffle } from './tokens';
-import { canWrite, computeStatus } from './status';
+import { canWrite, computeStatus, testClosed } from './status';
 import { invPath, loadVariant, toInv, type InvRow, type VariantDoc } from './model';
 import { newId, type Data, type Reader, type Store, type Tx } from './store';
 import { countWords } from '@/lib/words';
@@ -87,13 +87,14 @@ async function buildView(store: Store, inv: InvRow, now: Date): Promise<AttemptV
   const serverNow = now.toISOString();
   const cfg = config();
 
-  if (status === 'vencida') return { status, serverNow, name: inv.name };
+  if (status === 'vencida') return { status, serverNow, name: inv.name, closed: testClosed(now) };
 
   if (status === 'creada') {
     const variant = await loadVariant(store, inv.variant);
     return {
       status,
       serverNow,
+      closesAt: cfg.testClosesAt?.toISOString() ?? null,
       name: inv.name,
       role: inv.role,
       roleLabel: ROLE_LABEL[inv.role],
@@ -212,7 +213,10 @@ export async function startAttempt(store: Store, token: string, accepted: boolea
     if (!safeEqualHex(inv.tokenHash, hashToken(token))) throw new AppError('invalid_token', 404, 'Enlace no válido');
     const status = computeStatus(inv, now);
     if (status === 'en_curso') return; // idempotente: reabrir no reinicia el reloj
-    if (status === 'vencida') throw new AppError('link_expired', 410, 'El enlace venció sin iniciar la prueba');
+    if (status === 'vencida') {
+      if (testClosed(now)) throw new AppError('test_closed', 410, 'La prueba ya cerró: no se puede iniciar');
+      throw new AppError('link_expired', 410, 'El enlace venció sin iniciar la prueba');
+    }
     if (status !== 'creada') throw new AppError('already_closed', 409, 'La prueba ya terminó');
     const deadline = new Date(now.getTime() + config().durationMinutes * 60_000);
     await t.merge(invPath(inv.id), {

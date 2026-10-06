@@ -95,7 +95,13 @@ export function AttemptApp() {
 
   switch (view.status) {
     case 'vencida':
-      return (
+      return view.closed ? (
+        <Shell>
+          <h1>La prueba ya cerró</h1>
+          <span className="rail" aria-hidden="true" />
+          <p>Hola, {view.name}. El plazo para presentar la prueba terminó y ya no es posible iniciarla. Si crees que es un error, escríbele al equipo de Háptica.</p>
+        </Shell>
+      ) : (
         <Shell>
           <h1>Este enlace venció</h1>
           <span className="rail" aria-hidden="true" />
@@ -186,6 +192,12 @@ function Welcome({ view, call, onView }: { view: Extract<AttemptView, { status: 
           </p>
         ) : null}
       </section>
+
+      {view.closesAt ? (
+        <div className="card warn" role="note">
+          <strong>La prueba cierra el {new Date(view.closesAt).toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'full', timeStyle: 'short' })} (hora de Colombia).</strong> Pasada esa hora ya no se puede iniciar. Si empiezas antes, tendrás tus 90 minutos completos.
+        </div>
+      ) : null}
 
       <div className="card warn" role="note">
         <strong>Importante: no se puede volver atrás.</strong> La prueba tiene cuatro partes (1A, 1B, 2 y 3) y se responden en ese orden. Cuando envías una parte, queda bloqueada: no podrás volver a ella ni cambiar tus respuestas. Revisa bien antes de enviar. Si se acaba el tiempo, se envía automáticamente lo que tengas escrito.

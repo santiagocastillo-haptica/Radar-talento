@@ -41,10 +41,12 @@ export interface PartView {
 }
 
 export type AttemptView =
-  | { status: 'vencida'; serverNow: string; name: string }
+  | { status: 'vencida'; serverNow: string; name: string; /** true si venció porque la prueba cerró */ closed: boolean }
   | {
       status: 'creada';
       serverNow: string;
+      /** Hora de cierre de la prueba (después de ella nadie puede iniciar), si está definida. */
+      closesAt: string | null;
       name: string;
       role: string;
       roleLabel: string;

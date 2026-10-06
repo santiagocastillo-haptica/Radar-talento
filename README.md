@@ -50,6 +50,10 @@ Ver [`.env.example`](.env.example). Las obligatorias en producción: `FIREBASE_S
 
 No se necesitan índices compuestos (`firestore.indexes.json` está vacío).
 
+## Cierre de la prueba
+
+`TEST_CLOSES_AT` (variable de entorno, ISO-8601 con zona; p. ej. `2026-10-08T13:00:00-05:00` = jueves 8 de octubre de 2026, 1:00 p. m. hora de Colombia): pasada esa hora **nadie puede iniciar** la prueba (el enlace muestra "La prueba ya cerró", no se pueden regenerar enlaces de quienes no empezaron) y el panel lo indica. **Quien ya empezó conserva sus 90 minutos completos.** Para cerrar también a los que están en curso habría que recortar su `deadlineAt`. Vacío o inválido = sin cierre.
+
 ## Cómo se cumplen las reglas del brief
 
 - **Reloj:** `deadlineAt = startedAt + 90 min` se fija al presionar *Comenzar*; el estado (`creada`, `vencida`, `en_curso`, `enviada`, `expirada`) se **calcula** de esas marcas en cada lectura/escritura, no con un timer. Reabrir el enlace reanuda con el tiempo restante correcto. El cliente muestra la cuenta regresiva anclada a la hora del servidor con un reloj monótono (`performance.now`), así que cambiar la hora del computador no la altera. Se aceptan escrituras hasta `deadline + 10 s`.

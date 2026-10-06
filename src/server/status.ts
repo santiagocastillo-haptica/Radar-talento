@@ -11,10 +11,16 @@ export const STATUS_LABEL: Record<Status, string> = {
   expirada: 'Expirada',
 };
 
+/** ¿Ya pasó el cierre de la prueba (TEST_CLOSES_AT)? Después de esa hora nadie puede iniciar. */
+export function testClosed(now: Date): boolean {
+  const c = config().testClosesAt;
+  return !!c && now.getTime() > c.getTime();
+}
+
 /** El estado SIEMPRE se calcula a partir de las marcas de tiempo del servidor; nunca de un timer. */
 export function computeStatus(inv: InvRow, now: Date): Status {
   if (!inv.startedAt || !inv.deadlineAt) {
-    return now.getTime() > inv.expiresAt.getTime() ? 'vencida' : 'creada';
+    return now.getTime() > inv.expiresAt.getTime() || testClosed(now) ? 'vencida' : 'creada';
   }
   if (inv.finishedAt) return 'enviada';
   if (now.getTime() > inv.deadlineAt.getTime()) return 'expirada';

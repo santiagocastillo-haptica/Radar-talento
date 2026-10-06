@@ -29,6 +29,8 @@ export default async function AdminHome() {
   if (!c.privacyPolicyUrl) pending.push('PRIVACY_POLICY_URL (enlace a la política de datos personales de Háptica en la pantalla de inicio)');
   if (c.dataRetentionDays === null) pending.push('DATA_RETENTION_DAYS (retención de datos: definirla con Jurídico antes de usar la plataforma con candidatos reales)');
 
+  const closes = c.testClosesAt;
+  const closed = !!closes && now.getTime() > closes.getTime();
   const count = {
     sinAbrir: rows.filter((r) => !r.openedAt && !r.startedAt && r.status !== 'vencida').length,
     abrieron: rows.filter((r) => r.openedAt && !r.startedAt && r.status !== 'vencida').length,
@@ -44,6 +46,14 @@ export default async function AdminHome() {
         <p className="eyebrow">Panel del equipo</p>
         <h1>Invitaciones y candidatos</h1>
         <span className="rail" aria-hidden="true" />
+
+        {closes ? (
+          <div className={`card ${closed ? 'warn' : 'ok'}`} role="note">
+            <strong>{closed ? 'La prueba está CERRADA' : 'La prueba cierra'}:</strong>{' '}
+            {closes.toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'full', timeStyle: 'short' })} (hora de Colombia).{' '}
+            {closed ? 'Nadie puede iniciarla; quien ya empezó conserva sus 90 minutos.' : 'Después de esa hora nadie podrá iniciarla; quien ya empezó conserva sus 90 minutos.'}
+          </div>
+        ) : null}
 
         {pending.length ? (
           <div className="card warn" role="note">

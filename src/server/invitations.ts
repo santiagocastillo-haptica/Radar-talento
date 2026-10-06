@@ -1,7 +1,7 @@
 import { config } from './config';
 import { generateToken, hashToken } from './tokens';
 import { AppError } from './attempt';
-import { computeStatus } from './status';
+import { computeStatus, testClosed } from './status';
 import { invPath, toInv } from './model';
 import { newId, type Store, type Writer } from './store';
 import type { Role } from '@/content/types';
@@ -71,6 +71,7 @@ export async function regenerateLink(store: Store, invitationId: string, actor: 
     if (!doc) throw new AppError('not_found', 404, 'Invitación no encontrada');
     const inv = toInv(invitationId, doc);
     const status = computeStatus(inv, now);
+    if (!inv.startedAt && testClosed(now)) throw new AppError('test_closed', 409, 'La prueba ya cerró: ya no se pueden iniciar pruebas nuevas');
     if (status === 'enviada' || status === 'expirada') {
       throw new AppError('not_regenerable', 409, 'La prueba ya terminó: no hay enlace que regenerar');
     }
