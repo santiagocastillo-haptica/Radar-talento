@@ -9,6 +9,7 @@
     "start": "next start",
     "seed": "tsx scripts/seed.ts",
     "admin:create": "tsx scripts/create-admin.ts",
+    "test-invitations": "tsx scripts/create-test-invitations.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
