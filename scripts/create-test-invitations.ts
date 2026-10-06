@@ -4,12 +4,18 @@ import { createInvitation } from '../src/server/invitations';
 /**
  * Crea dos invitaciones de PRUEBA (una por rol) y muestra sus enlaces una sola vez.
  *   npm run test-invitations
- * Usa APP_URL para armar el enlace (en PowerShell: $env:APP_URL = "https://radar-talento-six.vercel.app").
+ * Necesita las MISMAS variables que producción: APP_URL y TOKEN_HASH_SECRET (el valor que tiene Vercel). Con otro
+ * TOKEN_HASH_SECRET los enlaces salen inválidos en el sitio. Más simple: crearlas desde el panel.
  * Después se pueden eliminar desde el panel (detalle → Eliminar invitación).
  */
 async function main() {
   if (!firestoreConfigured()) {
     console.error('Define FIREBASE_SERVICE_ACCOUNT para usar Firestore.');
+    process.exit(1);
+  }
+  if (!process.env.TOKEN_HASH_SECRET || !process.env.APP_URL) {
+    console.error('Define TOKEN_HASH_SECRET (igual al de Vercel) y APP_URL; si no, los enlaces no funcionarán en el sitio.');
+    console.error('Más simple: crea las invitaciones desde el panel (Nueva invitación).');
     process.exit(1);
   }
   const store = await getStore();
