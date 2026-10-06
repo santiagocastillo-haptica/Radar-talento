@@ -166,8 +166,9 @@ describe('calificación, evaluación y exportación', () => {
     expect(part2.questions[1].mc!.correct).toBe(false);
     expect(part2.questions[2].mc!.correct).toBeNull(); // sin responder
     const s01 = d!.part2BySkill.find((s) => s.skill === '01')!;
-    expect(s01.total).toBeGreaterThanOrEqual(3); // ítems 1, 2 y 3 (01 y 02)
-    expect(s01.correct).toBe(1);
+    expect(s01).toMatchObject({ correct: 1, total: 1 }); // ítem 1 acertado
+    const s03 = d!.part2BySkill.find((s) => s.skill === '03')!;
+    expect(s03.correct).toBe(0); // ítem 2 (diseño iterativo) errado
     // No existe puntaje total en ninguna parte del detalle.
     expect(JSON.stringify(d)).not.toMatch(/total(Score|Points)|puntaje/i);
   });
@@ -207,11 +208,11 @@ describe('calificación, evaluación y exportación', () => {
     const { candidatos, respuestas } = await buildExport(local, at(T0, min(60)));
     expect(candidatos.rows).toHaveLength(1);
     expect(candidatos.headers.join('|')).not.toMatch(/total|puntaje/i);
-    expect(candidatos.headers.filter((h) => h.startsWith('P2 ítem'))).toHaveLength(12);
-    expect(respuestas.rows).toHaveLength(7); // 1A(3) + 1B(2) + 3(2)
+    expect(candidatos.headers.filter((h) => h.startsWith('P2 ítem'))).toHaveLength(10);
+    expect(respuestas.rows).toHaveLength(6); // 1A(3) + 1B(2) + 3(1)
     expect(respuestas.rows.filter((r) => r[3] === '1A')).toHaveLength(3);
     expect(respuestas.rows.filter((r) => r[3] === '1B')).toHaveLength(2);
-    expect(respuestas.rows.filter((r) => r[3] === '3')).toHaveLength(2);
+    expect(respuestas.rows.filter((r) => r[3] === '3')).toHaveLength(1);
 
     const buf = await toXlsx([candidatos, respuestas]);
     const wb = new ExcelJS.Workbook();

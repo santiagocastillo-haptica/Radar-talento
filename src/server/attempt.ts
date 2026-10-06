@@ -28,6 +28,9 @@ export class AppError extends Error {
 }
 
 const MAX_TEXT_CHARS = 20000;
+
+/** Sustituye el marcador {{rol}} de un enunciado por el nombre del rol de la invitación. */
+export const replaceRole = (text: string, role: keyof typeof ROLE_LABEL) => text.replaceAll('{{rol}}', ROLE_LABEL[role]);
 const MAX_SIGNAL_EVENTS_PER_INVITATION = 5000;
 const TOKEN_RE = /^[A-Za-z0-9_-]{20,100}$/;
 
@@ -154,7 +157,7 @@ async function buildPartView(store: Store, inv: InvRow, partId: PartId, startedA
       number: q.number,
       kind: q.kind,
       label: q.label,
-      prompt: q.prompt.replaceAll('{{rol}}', roleLabel),
+      prompt: replaceRole(q.prompt, inv.role),
       wordLimit: q.wordLimit,
       allowImage: !!q.allowImage,
     };

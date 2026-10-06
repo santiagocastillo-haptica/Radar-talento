@@ -66,7 +66,7 @@ describe('contenido ajustado (documento de Háptica)', () => {
     ]);
   });
 
-  it('Parte 3: dos preguntas, ambas con imagen opcional', async () => {
+  it('Parte 3: una sola pregunta abierta (la de la autoría), con imagen opcional', async () => {
     const { token } = await startedAttempt(db);
     let t = 1;
     for (const part of ['1A', '1B', '2'] as const) {
@@ -75,8 +75,11 @@ describe('contenido ajustado (documento de Háptica)', () => {
       t += 3;
     }
     const p3 = await viewPart(db, token, at(T0, min(t)));
-    expect(p3.questions.map((q) => q.allowImage)).toEqual([true, true]);
-    expect(p3.questions.map((q) => q.number)).toEqual([1, 2]);
+    expect(p3.questions).toHaveLength(1);
+    expect(p3.questions[0].allowImage).toBe(true);
+    expect(p3.questions[0].prompt).toContain('¿en qué momento un entregable deja de reflejar el criterio del diseñador');
+    expect(p3.questions[0].prompt).toContain('rol del diseñador como "autor"');
+    expect(p3.intro).toEqual([]); // sin la introducción anterior (ya no aplica)
   });
 });
 
@@ -86,10 +89,10 @@ describe('versiones del contenido', () => {
     await s.set('variants/sd-renovacion-polizas', { slug: 'sd-renovacion-polizas', role: 'service_designer', active: true, name: 'vieja' });
     expect(await retireOldVariants(s)).toEqual(['sd-renovacion-polizas']);
     expect((await s.get('variants/sd-renovacion-polizas'))!.active).toBe(false);
-    expect((await s.get('variants/sd-renovacion-polizas-v2'))!.active).toBe(true);
+    expect((await s.get('variants/sd-renovacion-polizas-v3'))!.active).toBe(true);
     // Las invitaciones nuevas solo reciben variantes activas.
     const { id } = await startedAttempt(s, 'service_designer');
-    expect((await s.get(`invitations/${id}`))!.variant).toBe('sd-renovacion-polizas-v2');
+    expect((await s.get(`invitations/${id}`))!.variant).toBe('sd-renovacion-polizas-v3');
     // Reejecutar el seed no reactiva la vieja.
     await seedContent(s);
     expect((await s.get('variants/sd-renovacion-polizas'))!.active).toBe(false);

@@ -74,20 +74,20 @@ No se necesitan índices compuestos (`firestore.indexes.json` está vacío).
 - **Rúbrica y preguntas de entrevista** viven en `src/content/rubric.ts` (referencia del panel); el contenido de la prueba, en `src/content/variants.ts` y se carga con `npm run seed`. Para añadir una variante de un rol, agrega otro objeto con distinto `slug`. **No edites una variante que ya se aplicó**: crea una nueva.
 - Zona horaria del panel: America/Bogota.
 
-## Contenido de la prueba: versión ajustada (v2)
+## Contenido de la prueba: versión ajustada (v3)
 
-El contenido sale del documento "Prueba de selección async — Service Designer y Legal Service Designer" y vive en `src/content/variants.ts`. Cada versión usa un `slug` nuevo (`…-v2`): al correr `npm run seed`, las variantes que ya no están en el contenido vigente quedan **retiradas** (`active: false`), así que las invitaciones nuevas reciben solo la versión vigente y las ya creadas siguen con la suya.
+El contenido sale del documento "Prueba de selección async — Service Designer y Legal Service Designer" y vive en `src/content/variants.ts`. Cada versión usa un `slug` nuevo (`…-v3`; la v2 quedó retirada): al correr `npm run seed`, las variantes que ya no están en el contenido vigente quedan **retiradas** (`active: false`), así que las invitaciones nuevas reciben solo la versión vigente y las ya creadas siguen con la suya.
 
-**Imágenes adjuntas opcionales** ("Opcional: adjuntar imagen si lo consideras necesario"): en 1A (todas las preguntas), 1B (campo 4 de Service Designer) y Parte 3 (ambos campos). Una imagen por pregunta, máx. 8 por intento. El navegador la reduce (JPEG, lado mayor ≤ 1600 px); el servidor exige ≤ 600 KB, verifica el tipo por los bytes (JPG/PNG/WebP; se rechaza SVG y todo lo demás) y respeta el reloj. Se guarda en `invitations/{id}/attachments/{pregunta}` (base64) y solo la ve el equipo con sesión. Eliminar una invitación borra también sus imágenes.
+**Imágenes adjuntas opcionales** ("Opcional: adjuntar imagen si lo consideras necesario"): en 1A (todas las preguntas), 1B (campo 4 de Service Designer) y Parte 3. Una imagen por pregunta, máx. 8 por intento. El navegador la reduce (JPEG, lado mayor ≤ 1600 px); el servidor exige ≤ 600 KB, verifica el tipo por los bytes (JPG/PNG/WebP; se rechaza SVG y todo lo demás) y respeta el reloj. Se guarda en `invitations/{id}/attachments/{pregunta}` (base64) y solo la ve el equipo con sesión. Eliminar una invitación borra también sus imágenes.
 
 ### Diferencias del documento que se resolvieron así (confirmar)
 
-1. **Claves de los ítems 9 y 12.** El texto de esos ítems cambió, pero la tabla de claves conserva las letras de la versión anterior. Se tomó la respuesta *conceptualmente* correcta: ítem 9 → "versión mínima de (B)…" (opción B); ítem 12 Service Designer → piloto "Mago de oz" (opción B); ítem 12 Legal → "explicar con sus propias palabras…" (opción C).
+1. **Claves de los ítems 9 y 12 del documento** (hoy ítems 7 y 10 por la renumeración). El texto de esos ítems cambió, pero la tabla de claves conserva las letras de la versión anterior. Se tomó la respuesta *conceptualmente* correcta: ítem 9 → "versión mínima de (B)…" (opción B); ítem 12 Service Designer → piloto "Mago de oz" (opción B); ítem 12 Legal → "explicar con sus propias palabras…" (opción C).
 2. **Preguntas 1A de Legal Service Designer.** El documento dice "las mismas tres que Service Designer" pero la descripción entre paréntesis corresponde a las anteriores. Se usaron las tres nuevas (Hipótesis, Investigación, Resultados) con "cooperativa" en lugar de "Aseguradora", porque se eliminaron las restricciones del caso en que se apoyaban las preguntas anteriores.
 3. **Tiempo sugerido de 1A:** 30 min en Service Designer y 25 en Legal (como indican sus secciones; la tabla general dice 30).
-4. **Marcas "REVISAR"** de los ítems 2 y 3 no se muestran al candidato.
+4. **Ítems marcados "REVISAR"** (2 y 3 del documento): se **eliminaron** de la Parte 2, que queda en **10 ítems** (8 comunes + 2 por rol), numerados de corrido. Las habilidades 01 y 02 pierden esos ítems situacionales: ahora tienen un solo ítem cada una en la Parte 2 (la 01 también el ítem 10 de Legal), así que su lectura depende más de la Parte 1.
 5. **Texto de reglas:** se mantiene el texto ajustado por Háptica (se puede usar IA); el documento aún trae el anterior ("sin ayuda de IA").
-6. **Parte 3:** la pregunta "¿Qué salió mal…?" ya no existe; la rúbrica conserva el indicador "Error o límite".
+6. **Parte 3:** es una **sola pregunta abierta** (autoría del diseñador frente a la IA), con el texto exacto de Háptica, límite de 300 palabras e imagen opcional. Se quitó la introducción anterior ("Piensa en un trabajo real…"). Los indicadores de la rúbrica (ejemplo propio, error o límite…) ya no corresponden al enunciado: conviene revisarlos.
 7. **Guía del evaluador (LSD):** menciona el dato de 9 segundos, que ya no aparece en el caso del candidato.
 8. En el documento la suma de tiempos sugeridos (95 min con el margen) supera el reloj de 90: se mantiene el reloj único de 90.
 

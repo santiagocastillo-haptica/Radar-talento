@@ -7,6 +7,9 @@ import { PART_ORDER } from '@/content/types';
 
 /** Exportación: una fila por candidato (sin puntaje total) y una hoja con las respuestas abiertas. */
 
+/** Ítems de la Parte 2 por candidato (8 comunes + 2 del rol). */
+const PART2_ITEMS = 10;
+
 type Cell = string | number | null;
 export interface Sheet {
   name: string;
@@ -36,7 +39,7 @@ function candidateRow(d: CandidateDetail): Cell[] {
   }
   for (const i of PART3_INDICATORS) row.push(d.evaluations[i.key] ? EVAL_STATUS_LABEL[d.evaluations[i.key]] : '');
   const p2 = d.parts.find((p) => p.id === '2')!;
-  for (let n = 1; n <= 12; n++) {
+  for (let n = 1; n <= PART2_ITEMS; n++) {
     const q = p2.questions.find((x) => x.number === n);
     row.push(q?.mc ? (q.mc.correct === null ? '' : q.mc.correct ? 1 : 0) : '');
   }
@@ -60,7 +63,7 @@ const CANDIDATE_HEADERS = [
   'Reinicios de reloj',
   ...SKILLS.map((s) => `Habilidad ${s.code} ${s.name}`),
   ...PART3_INDICATORS.map((i) => `Parte 3: ${i.title}`),
-  ...Array.from({ length: 12 }, (_, i) => `P2 ítem ${i + 1} (1=acierto, 0=error)`),
+  ...Array.from({ length: PART2_ITEMS }, (_, i) => `P2 ítem ${i + 1} (1=acierto, 0=error)`),
   ...PART_ORDER.map((p) => `Minutos en ${p}`),
   'Eventos de pegado',
   'Caracteres pegados',

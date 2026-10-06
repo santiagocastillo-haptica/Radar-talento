@@ -1,4 +1,4 @@
-import { AppError } from './attempt';
+import { AppError, replaceRole } from './attempt';
 import { audit } from './invitations';
 import { computeStatus, remainingMs, type Status } from './status';
 import { invPath, loadVariant, toInv, type VariantKeysDoc } from './model';
@@ -164,7 +164,7 @@ export async function getCandidateDetail(store: Store, id: string, now = new Dat
           number: q.number,
           kind: q.kind,
           label: q.label,
-          prompt: q.prompt.replaceAll('{{rol}}', roleLabel),
+          prompt: replaceRole(q.prompt, inv.role),
           wordLimit: q.wordLimit,
           text: (a?.text as string | undefined) ?? null,
           words: countWords(a?.text),

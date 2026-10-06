@@ -58,7 +58,7 @@ describe('la clave de la Parte 2 nunca sale hacia el candidato', () => {
     }
     // La clave vive en otro documento que el flujo del candidato no lee.
     const { keys } = await variantOf(db, id);
-    expect(Object.keys(keys)).toHaveLength(12);
+    expect(Object.keys(keys)).toHaveLength(10);
   });
 
   it('el barajado es por candidato (dos candidatos no ven el mismo orden en todos los ítems)', async () => {
@@ -82,27 +82,27 @@ describe('la clave de la Parte 2 nunca sale hacia el candidato', () => {
 });
 
 describe('contenido cargado por el seed', () => {
-  it('hay 2 variantes, 12 ítems por variante y una clave por ítem', async () => {
+  it('hay 2 variantes, 10 ítems por variante y una clave por ítem', async () => {
     const variants = await db.query('variants');
     expect(variants).toHaveLength(VARIANTS.length);
     for (const v of variants) {
       const items = (v.data.questions as { part: string }[]).filter((q) => q.part === '2');
-      expect(items).toHaveLength(12);
+      expect(items).toHaveLength(10);
       const keys = (await db.get(`variantKeys/${v.id}`))!.keys;
-      expect(Object.keys(keys)).toHaveLength(12);
+      expect(Object.keys(keys)).toHaveLength(10);
     }
   });
 
-  it('la clave coincide con la tabla de la sección 9.5 (ítems 1–10 comunes y 11–12 por rol)', async () => {
+  it('la clave coincide con el documento ajustado (8 ítems comunes + 2 por rol, numerados de corrido)', async () => {
     const expected: Record<string, string> = {
-      // Ítems 9 y 12 reescritos en la versión ajustada; ver README (la tabla del documento conserva letras de la versión anterior).
-      'sd-renovacion-polizas-v2': 'ACDBDBCABBAB',
-      'lsd-contrato-credito-v2': 'ACDBDBCABBCC',
+      // Se retiraron los ítems marcados REVISAR (antes 2 y 3); ítems 9 y 12 del documento reescritos (ver README).
+      'sd-renovacion-polizas-v3': 'ABDBCABBAB',
+      'lsd-contrato-credito-v3': 'ABDBCABBCC',
     };
     for (const [slug, letters] of Object.entries(expected)) {
       const variant = (await db.get(`variants/${slug}`))!;
       const keys = (await db.get(`variantKeys/${slug}`))!.keys as Record<string, { correctOptionId: string }>;
-      const got = Array.from({ length: 12 }, (_, i) => {
+      const got = Array.from({ length: 10 }, (_, i) => {
         const q = (variant.questions as { id: string; options: { id: string }[] }[]).find((x) => x.id === `2-${i + 1}`)!;
         return 'ABCD'[q.options.findIndex((o) => o.id === keys[q.id].correctOptionId)];
       }).join('');
@@ -110,17 +110,17 @@ describe('contenido cargado por el seed', () => {
     }
   });
 
-  it('las habilidades de la clave coinciden con la sección 9.5', async () => {
-    const keys = (await db.get('variantKeys/sd-renovacion-polizas-v2'))!.keys as Record<string, { skill: string }>;
-    const skills = Array.from({ length: 12 }, (_, i) => keys[`2-${i + 1}`].skill);
-    expect(skills).toEqual(['01', '01', '01,02', '03', '02', '05', '06', '08', '09', '04', '02', '03']);
-    const lsd = (await db.get('variantKeys/lsd-contrato-credito-v2'))!.keys as Record<string, { skill: string }>;
-    expect([lsd['2-11'].skill, lsd['2-12'].skill]).toEqual(['03', '01']);
+  it('las habilidades de la clave siguen el documento', async () => {
+    const keys = (await db.get('variantKeys/sd-renovacion-polizas-v3'))!.keys as Record<string, { skill: string }>;
+    const skills = Array.from({ length: 10 }, (_, i) => keys[`2-${i + 1}`].skill);
+    expect(skills).toEqual(['01', '03', '02', '05', '06', '08', '09', '04', '02', '03']);
+    const lsd = (await db.get('variantKeys/lsd-contrato-credito-v3'))!.keys as Record<string, { skill: string }>;
+    expect([lsd['2-9'].skill, lsd['2-10'].skill]).toEqual(['03', '01']);
   });
 
   it('el seed es idempotente (mismos ids de opción)', async () => {
-    const before = JSON.stringify(await db.get('variants/sd-renovacion-polizas-v2'));
+    const before = JSON.stringify(await db.get('variants/sd-renovacion-polizas-v3'));
     await seedContent(db);
-    expect(JSON.stringify(await db.get('variants/sd-renovacion-polizas-v2'))).toBe(before);
+    expect(JSON.stringify(await db.get('variants/sd-renovacion-polizas-v3'))).toBe(before);
   });
 });

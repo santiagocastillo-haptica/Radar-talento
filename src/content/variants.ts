@@ -35,34 +35,6 @@ const COMMON_ITEMS: SeedQuestion[] = [
     skill: '01',
   },
   {
-    number: 2,
-    kind: 'mc',
-    prompt:
-      'Tras lanzar un rediseño, la conversión sube de 20% a 24%. Ese mismo mes hubo una campaña de marketing. Tienes los datos por fuente de tráfico. ¿Qué haces?',
-    options: [
-      { text: 'Afirmas que el rediseño aumentó la conversión 4 puntos; la campaña es un detalle.' },
-      { text: 'Concluyes que no se puede saber nada y propones repetir el lanzamiento como test A/B.' },
-      { text: 'Comparas la conversión por fuente de tráfico: si también subió en el tráfico que no vino de la campaña, hay evidencia a favor del rediseño; si no, la campaña explica buena parte.' },
-      { text: 'Atribuyes el aumento a la campaña, porque trae más usuarios.' },
-    ],
-    correctIndex: 2,
-    skill: '01',
-  },
-  {
-    number: 3,
-    kind: 'mc',
-    prompt:
-      'Solo puedes implementar una mejora este mes. La mejora X llega al 60% de los usuarios y reduce el abandono en 2 puntos dentro de ese grupo. La mejora Y llega al 10% de los usuarios y reduce el abandono en 15 puntos dentro de ese grupo. ¿Qué afirmación es correcta?',
-    options: [
-      { text: 'X tiene mayor efecto: llega a más usuarios y eso pesa más que la intensidad del efecto.' },
-      { text: 'Y tiene mayor efecto por usuario afectado, y esa es la métrica que importa.' },
-      { text: 'X tiene mayor efecto: 60% por 2 puntos suma más que 10% por 15 puntos.' },
-      { text: 'Y reduce el abandono total en unos 1,5 puntos frente a unos 1,2 de X; la ventaja es pequeña y el esfuerzo podría cambiar la decisión.' },
-    ],
-    correctIndex: 3,
-    skill: '01,02',
-  },
-  {
     number: 4,
     kind: 'mc',
     prompt:
@@ -266,23 +238,16 @@ const Q_1B_ADJUST = (allowImage: boolean): SeedQuestion => ({
 
 // ───────────────────────── Parte 3 ─────────────────────────
 
-const PART3_INTRO = 'Piensa en un trabajo real de los últimos seis meses en el que usaste IA, o en el que decidiste no usarla.';
 const PART3_OUTRO = 'No hay respuesta correcta; queremos entender cómo piensas y cómo trabajas hoy.';
 
-/** `{{rol}}` se reemplaza por el nombre del rol de la invitación al servir la pregunta. */
+/** Pregunta abierta única de la Parte 3 (límite compartido de 300 palabras). `{{rol}}` se reemplaza si aparece. */
 const Q_3: SeedQuestion[] = [
   {
     number: 1,
     kind: 'open',
     allowImage: true,
-    prompt: '¿Qué hiciste, con qué herramienta y para qué parte del trabajo? Si no la usaste, ¿por qué decidiste no hacerlo?',
-  },
-  {
-    number: 2,
-    kind: 'open',
-    allowImage: true,
     prompt:
-      'Dentro de tres años, ¿qué parte de tu trabajo como {{rol}} crees que la IA hará mejor que tú y qué parte seguirás haciendo tú? Justifica tu respuesta.',
+      'Hoy en día, una IA puede estructurar un Service Blueprint, sintetizar 20 hallazgos de investigación o redactar la síntesis de un contrato en segundos con un tono convincente y profesional. Ante esta realidad, ¿en qué momento un entregable deja de reflejar el criterio del diseñador y pasa a ser solo un producto de la herramienta? Argumenta tu postura sobre cuál es el rol del diseñador como "autor" cuando la IA ejecuta gran parte del trabajo.',
   },
 ];
 
@@ -301,12 +266,12 @@ function buildParts(opts: {
       title: 'Parte 2: selección múltiple',
       intro: [{ type: 'p', text: 'Elige una respuesta por ítem.' }],
       suggestedMinutes: SUGGESTED_MINUTES['2'],
-      questions: [...COMMON_ITEMS, ...opts.roleItems],
+      // Se numera de corrido (1…n) aunque se retiren ítems del banco.
+      questions: [...COMMON_ITEMS, ...opts.roleItems].map((q, i) => ({ ...q, number: i + 1 })),
     },
     {
       part: '3',
       title: 'Parte 3: tu rol frente a la IA',
-      intro: [{ type: 'p', text: PART3_INTRO }],
       outro: PART3_OUTRO,
       suggestedMinutes: SUGGESTED_MINUTES['3'],
       groupWordLimit: 300,
@@ -318,7 +283,7 @@ function buildParts(opts: {
 // ───────────────────────── Variante Service Designer ─────────────────────────
 
 const SD_VARIANT: SeedVariant = {
-  slug: 'sd-renovacion-polizas-v2',
+  slug: 'sd-renovacion-polizas-v3',
   role: 'service_designer',
   name: 'Service Designer: Renovación de pólizas',
   caseTitle: 'Renovación de pólizas',
@@ -380,7 +345,7 @@ const SD_VARIANT: SeedVariant = {
 // ───────────────────────── Variante Legal Service Designer ─────────────────────────
 
 const LSD_VARIANT: SeedVariant = {
-  slug: 'lsd-contrato-credito-v2',
+  slug: 'lsd-contrato-credito-v3',
   role: 'legal_service_designer',
   name: 'Legal Service Designer: Contrato de crédito digital',
   caseTitle: 'Contrato de crédito digital',

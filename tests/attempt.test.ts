@@ -206,7 +206,7 @@ describe('límites de palabras en servidor', () => {
     expect((await viewPart(db, token, at(T0, min(3)))).id).toBe('1A'); // no quedó enviada
   });
 
-  it('Parte 3: límite de 300 palabras compartido entre los dos campos', async () => {
+  it('Parte 3: límite de 300 palabras', async () => {
     const { token } = await startedAttempt(db);
     let t = 1;
     for (const part of ['1A', '1B', '2'] as const) {
@@ -216,32 +216,19 @@ describe('límites de palabras en servidor', () => {
     }
     const p3 = await viewPart(db, token, at(T0, min(t)));
     expect(p3.groupWordLimit).toBe(300);
-    expect(p3.questions).toHaveLength(2);
-    const [a, b] = p3.questions;
-    const r1 = await saveAnswers(db, token, '3', [{ questionId: a.id, text: words(200) }], undefined, at(T0, min(t + 1)));
+    expect(p3.questions).toHaveLength(1);
+    const [a] = p3.questions;
+    const r1 = await saveAnswers(db, token, '3', [{ questionId: a.id, text: words(300) }], undefined, at(T0, min(t + 1)));
     expect(r1.rejected).toEqual([]);
-    // 200 + 101 = 301 → rechazado
-    const r2 = await saveAnswers(db, token, '3', [{ questionId: b.id, text: words(101) }], undefined, at(T0, min(t + 2)));
-    expect(r2.rejected).toEqual([{ questionId: b.id, code: 'over_group_limit' }]);
-    const r3 = await saveAnswers(db, token, '3', [{ questionId: b.id, text: words(100) }], undefined, at(T0, min(t + 3)));
-    expect(r3.rejected).toEqual([]);
-    // El envío con 301 palabras repartidas también se rechaza.
-    expect(
-      await code(submitPart(db, token, '3', [{ questionId: a.id, text: words(201) }, { questionId: b.id, text: words(100) }], undefined, at(T0, min(t + 4)))),
-    ).toBe('over_limit');
+    const r2 = await saveAnswers(db, token, '3', [{ questionId: a.id, text: words(301) }], undefined, at(T0, min(t + 2)));
+    expect(r2.rejected).toEqual([{ questionId: a.id, code: 'over_group_limit' }]);
+    // El envío con 301 palabras también se rechaza y no queda enviada.
+    expect(await code(submitPart(db, token, '3', [{ questionId: a.id, text: words(301) }], undefined, at(T0, min(t + 3))))).toBe('over_limit');
   });
 
-  it('el rol se sustituye en el enunciado de la Parte 3', async () => {
-    const { token } = await startedAttempt(db, 'legal_service_designer');
-    let t = 1;
-    for (const part of ['1A', '1B', '2'] as const) {
-      const p = await viewPart(db, token, at(T0, min(t)));
-      await submitPart(db, token, part, fillAnswers(p), undefined, at(T0, min(t + 1)));
-      t += 3;
-    }
-    const p3 = await viewPart(db, token, at(T0, min(t)));
-    expect(p3.questions[1].prompt).toContain('como Legal Service Designer');
-    expect(p3.questions[1].prompt).not.toContain('{{rol}}');
+  it('el marcador {{rol}} se sustituiría en cualquier enunciado que lo use (mecanismo conservado)', async () => {
+    const { replaceRole } = await import('@/server/attempt');
+    expect(replaceRole('como {{rol}}', 'legal_service_designer')).toBe('como Legal Service Designer');
   });
 });
 
@@ -256,7 +243,7 @@ describe('selección múltiple', () => {
     }
     const first = await viewPart(db, token, at(T0, min(t)));
     const second = await viewPart(db, token, at(T0, min(t + 5)));
-    expect(first.questions).toHaveLength(12);
+    expect(first.questions).toHaveLength(10);
     for (const q of first.questions) expect(q.options).toHaveLength(4);
     expect(second.questions.map((q) => q.options!.map((o) => o.id))).toEqual(first.questions.map((q) => q.options!.map((o) => o.id)));
     // Es una permutación de las opciones de la base.
