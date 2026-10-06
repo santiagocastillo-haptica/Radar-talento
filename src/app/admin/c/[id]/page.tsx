@@ -12,6 +12,8 @@ import { NoteEditor } from '@/components/admin/NoteEditor';
 import { Remaining } from '@/components/admin/Remaining';
 import {
   DOUBTFUL_DATA,
+  LSD_CLAUSE_READINGS,
+  LSD_CRITERIA_BY_Q,
   INTERVIEW_NOTE,
   INTERVIEW_QUESTIONS,
   PART1_CRITERIA,
@@ -167,8 +169,14 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
         {(['1A', '1B'] as const).map((pid) => (
           <PartSection key={pid} p={part(pid)} d={d}>
             {part(pid).questions.map((q) => (
-              <OpenPair key={q.id} invitationId={inv.id} q={q} partId={pid} signals={s} criterion={d.variant.slug.startsWith('sd-') ? CRITERIA_BY_Q[`${pid}:${q.number}`] : undefined} />
+              <OpenPair key={q.id} invitationId={inv.id} q={q} partId={pid} signals={s} criterion={(d.variant.slug.startsWith('sd-') ? CRITERIA_BY_Q : LSD_CRITERIA_BY_Q)[`${pid}:${q.number}`]} />
             ))}
+            {pid === '1B' && inv.role === 'legal_service_designer' ? (
+              <div className="card subtle">
+                <h3>Lecturas posibles de la cláusula novena (solo referencia: no son respuestas únicas)</h3>
+                <ul>{LSD_CLAUSE_READINGS.map((x) => <li key={x}>{x}</li>)}</ul>
+              </div>
+            ) : null}
             {pid === '1A' ? (
               <div className="card subtle">
                 <h3>Datos dudosos esperados (solo referencia: lecturas posibles, no respuestas únicas)</h3>

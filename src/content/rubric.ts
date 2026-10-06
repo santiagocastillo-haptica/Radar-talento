@@ -110,12 +110,12 @@ export const DOUBTFUL_DATA: Record<Role, string[]> = {
     'Cuestionar la meta: 16.600 pólizas no renovadas (41,5%) y 15.200 que nunca abrieron la renovación pesan más que el canal por el que renuevan los demás.',
   ],
   legal_service_designer: [
-    '82% dice haber entendido pero la mediana de lectura es 9 segundos (autorreporte contra conducta).',
-    'La encuesta de 320 respuestas cubre una fracción de 28.200 firmantes.',
-    'Las quejas miden a quien reclama.',
-    '3 cláusulas concentran 71% de las quejas (923 de 1.300).',
-  ],
-};
+    '82% dice haber entendido, pero es autorreporte: no mide comprensión real ni conducta.',
+    'La encuesta de 320 respuestas cubre una fracción de los 28.200 firmantes.',
+    'Las quejas miden a quien reclama, no a quien no entendió.',
+    'Las 3 cláusulas "que concentran más quejas" no vienen nombradas: se infieren del dato (comisiones y costos 34% + pago anticipado 22% + centrales de riesgo 15% = 71%, 923 de 1.300).',
+    'Cuestionar la meta: reducir quejas sin bajar la firma puede lograrse sin que nadie entienda más; la comprensión real es la variable de fondo.',
+  ],};
 
 export interface Part3Indicator {
   key: string; // clave en la tabla evaluations
@@ -182,3 +182,72 @@ export const INTERVIEW_NOTE =
 
 export const SIGNALS_DISCLAIMER =
   'En esta prueba se puede usar IA, así que pegar texto es esperable y no significa nada por sí solo. Estas señales sirven para preguntar en la entrevista qué hizo la persona con las herramientas y qué aportó ella (criterio, correcciones, cifras del caso). Nunca son motivo de descarte.';
+
+/** Criterios de la Parte 1 para Legal Service Designer, por parte y número de pregunta (1A:1 … 1B:6). */
+export const LSD_CRITERIA_BY_Q: Record<string, Criterion> = {
+  '1A:1': {
+    key: 'lsd-hipotesis',
+    title: 'Hipótesis sobre las quejas',
+    skills: '01, 02',
+    operativo: 'Explica el aumento de quejas con una hipótesis plausible apoyada en al menos una cifra del caso.',
+    avanzado:
+      'Incluye una hipótesis sobre el texto mismo del contrato (no solo la pantalla o el flujo), falsable, y distingue el autorreporte (82% "entendí") de la comprensión real.',
+    alertas: 'Solo hipótesis de pantalla, flujo o UX; ignora el texto del contrato; hipótesis que no se pueden contrastar; toma el 82% como prueba de comprensión.',
+  },
+  '1A:2': {
+    key: 'lsd-investigacion',
+    title: 'Investigación en 3 semanas',
+    skills: '01, 03',
+    operativo: 'Propone hablar con usuarios y con la abogada, y al menos una actividad concreta que cabe en 3 semanas.',
+    avanzado:
+      'Define a quién (quienes reclamaron y quienes no; quienes firmaron) y mide comprensión por conducta (explicar con sus palabras, resolver un escenario) en las 3 cláusulas con más quejas; secuencia realista y usa a Jurídico para validar sin depender de ella.',
+    alertas: 'Solo una encuesta de autorreporte; plan que excede las 3 semanas; solo habla con quienes se quejaron; ignora cuáles son las 3 cláusulas.',
+  },
+  '1A:3': {
+    key: 'lsd-juridico',
+    title: 'Preguntas a Jurídico',
+    skills: '02, 06',
+    operativo: 'Formula 3 preguntas pertinentes y dice por qué las hace.',
+    avanzado:
+      'Cada pregunta está atada a una decisión: dice qué cambiaría en su propuesta según la respuesta (p. ej. qué es inmodificable, qué debe conservarse como evidencia, qué aprobación exige un resumen).',
+    alertas: 'Preguntas genéricas ("¿qué opinas?"); no son 3; no explica qué cambia; preguntas que Jurídico no puede responder.',
+  },
+  '1B:4': {
+    key: 'lsd-ambiguedades',
+    title: 'Ambigüedades de la cláusula novena',
+    skills: '01, 06',
+    operativo: 'Señala 2 o 3 puntos de la cláusula que de verdad admiten más de una lectura.',
+    avanzado:
+      'Incluye al menos un punto que contradice lo que el usuario cree (orden de aplicación del pago frente a "si pago antes me cobran menos intereses") y formula una pregunta concreta a Jurídico por punto, sin suponer una interpretación.',
+    alertas: 'Resuelve las dudas suponiendo una interpretación; señala puntos que no son ambiguos; lista vaga sin pregunta a Jurídico.',
+  },
+  '1B:5': {
+    key: 'lsd-reescritura',
+    title: 'Reescritura en lenguaje claro',
+    skills: '03, 06',
+    operativo: 'Lenguaje que entiende una persona sin formación jurídica y conserva las cifras principales.',
+    avanzado:
+      'Conserva TODAS las cifras, plazos, condiciones y excepciones (5 días, 20%, 12 meses, 2%, orden de aplicación, reliquidación por escrito, excepción por refinanciación), no agrega obligaciones, deja visibles las ambigüedades en vez de resolverlas y usa frases cortas aptas para leer en voz alta.',
+    alertas:
+      'Omite una cifra, condición o excepción; agrega obligaciones o interpreta (p. ej. fija "días hábiles"); cambia el sentido de "sin perjuicio de los intereses"; frases largas, referencias cruzadas o símbolos que no funcionan en audio.',
+  },
+  '1B:6': {
+    key: 'lsd-nota',
+    title: 'Nota para la abogada de Jurídico',
+    skills: '02, 06',
+    operativo: 'Dice qué simplificó y qué dejó casi literal.',
+    avanzado:
+      'Justifica con el riesgo (cambio de sentido frente a comprensión), nombra el riesgo de cada opción (reemplazar: invalida el texto y puede crear obligaciones; mostrar junto al original: duplicidad y una pantalla más) y pide una decisión concreta, respetando que todo resumen se aprueba cláusula por cláusula.',
+    alertas: 'Pide reemplazar el original sin ver el riesgo; tono de informe; largo; sin pedido concreto.',
+  },
+};
+
+/** Lecturas posibles de la cláusula novena (referencia del evaluador; no son respuestas únicas). */
+export const LSD_CLAUSE_READINGS = [
+  'Aviso "no inferior a cinco (5) días": ¿hábiles o calendario? ¿Qué pasa si no se da el aviso?',
+  'Umbral del 20% "individual o acumulado en doce (12) meses": ¿ventana móvil o año calendario? ¿20% del saldo de capital al inicio del periodo o al momento del pago?',
+  'Compensación del 2% "del valor prepagado": ¿sobre todo el prepago o solo sobre el exceso del 20%?',
+  '"Sin perjuicio de los intereses causados": ¿se suman a la compensación? Contradice lo que cree el usuario ("si pago antes me cobran menos intereses").',
+  'Orden de aplicación (intereses, comisiones y gastos primero) y "sin reducir la cuota salvo reliquidación escrita": ¿el prepago reduce plazo o cuota por defecto?',
+  'Excepción por refinanciación "con la misma cooperativa": ¿y con otra entidad? ¿Cómo se verifica el origen de los recursos?',
+];
