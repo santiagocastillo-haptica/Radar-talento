@@ -228,6 +228,9 @@ export function Running({
         <p className="eyebrow">{part.id === '1A' || part.id === '1B' ? 'Parte 1 · ' + part.caseTitle : part.title}</p>
         <h1>{part.title}</h1>
         <span className="rail" aria-hidden="true" />
+        <p className="small muted" role="note">
+          Cuando envíes esta parte quedará bloqueada: no podrás volver a ella ni cambiar tus respuestas.
+        </p>
 
         {part.twist ? (
           <section className="card twist" aria-labelledby="novedad">

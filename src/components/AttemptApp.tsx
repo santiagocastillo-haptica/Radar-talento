@@ -176,7 +176,7 @@ function Welcome({ view, call, onView }: { view: Extract<AttemptView, { status: 
       <section className="card subtle" aria-labelledby="datos">
         <h2 id="datos">Datos personales y señales registradas</h2>
         <p>
-          Registramos tus respuestas, el tiempo por parte y algunas señales de uso de la página (pegado de texto, cambios de pestaña y el ritmo de escritura). Pegar texto es normal, también si viene de una herramienta de IA: lo usamos solo para conversar contigo después. No usamos cámara, micrófono, grabación de pantalla ni identificación del dispositivo.
+          Registramos tus respuestas, el tiempo por parte y algunas señales de uso de la página (pegado de texto, cambios de pestaña y el ritmo de escritura). Pegar texto es normal, también si viene de una herramienta de IA: lo usamos solo para conversar contigo después sobre cómo trabajaste y qué aportaste tú; ninguna señal por sí sola descarta a nadie. No usamos cámara, micrófono, grabación de pantalla ni identificación del dispositivo.
         </p>
         {view.privacyUrl ? (
           <p>
@@ -186,6 +186,10 @@ function Welcome({ view, call, onView }: { view: Extract<AttemptView, { status: 
           </p>
         ) : null}
       </section>
+
+      <div className="card warn" role="note">
+        <strong>Importante: no se puede volver atrás.</strong> La prueba tiene cuatro partes (1A, 1B, 2 y 3) y se responden en ese orden. Cuando envías una parte, queda bloqueada: no podrás volver a ella ni cambiar tus respuestas. Revisa bien antes de enviar. Si se acaba el tiempo, se envía automáticamente lo que tengas escrito.
+      </div>
 
       <div className="card ok" role="note">
         <strong>El reloj NO corre en esta pantalla.</strong> Empieza a contar cuando presionas “Comenzar” y no se detiene aunque cierres la página; si vuelves a abrir el enlace, continúas donde ibas con el tiempo restante.
